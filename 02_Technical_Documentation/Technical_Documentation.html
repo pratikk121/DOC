@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Documentation & Architecture Manual | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>Technical Documentation & Architecture Manual</h1>
+      </div>
+
+      <article>
+<h2 id="1-system-architecture-overview">1. System Architecture Overview</h2>
+<p>The Wildfire Operations Center (EOC) platform is engineered as a decoupled, multi-tier Edge-to-Cloud telemetry and situational awareness system. It consists of four distinct operational layers:
+1. <strong>Edge Sensing Layer:</strong> ESP32 microcontrollers polling physical transducers and modulating RF data.
+2. <strong>Sub-GHz RF &amp; Ingestion Layer:</strong> 433 MHz LoRa transceiver base stations coupled with a host-level Python hardware bridge.
+3. <strong>Cloud Database &amp; Reactive Rules Engine:</strong> Supabase PostgreSQL 15 instance executing stored procedures, database triggers, and change-data-capture (CDC) streaming.
+4. <strong>Presentation &amp; Command Layer:</strong> Next.js 15 single-page tactical operations workstation.</p>
+<div class="mermaid-card"><pre class="mermaid">
+graph TD
+    subgraph Layer1_Edge [Layer 1: Edge Sensing Layer]
+        DHT[DHT22: Temp/Humidity\nGPIO 27] --> ESP_NODE[ESP32 Edge Node MCU\n240MHz Xtensa Dual-Core]
+        MQ2[MQ-2: Smoke ADC\nGPIO 34] --> ESP_NODE
+        FLAME[Flame IR Photodiode\nGPIO 35] --> ESP_NODE
+        ESP_NODE -->|SPI Bus: 18,19,23,5| LORA_TX[SX1278 Ra-02 LoRa\n433.0 MHz / SF7 / BW125]
+    end
+
+    subgraph Layer2_Transport [Layer 2: Transport & Bridge Layer]
+        LORA_TX -->|433 MHz RF Broadcast| LORA_RX[SX1278 Ra-02 LoRa\nBase Station Receiver]
+        LORA_RX -->|SPI Bus: 18,19,23,5| ESP_GW[ESP32 Gateway MCU]
+        ESP_GW -->|UART USB @ 115200 Baud\nGATEWAY_PACKET:...| PY_BRIDGE[Python Serial Bridge\nbridge.py]
+        PY_BRIDGE -->|Physical Boundary Checks\n-50C to 100C / 0-4095 ADC| PY_VAL[Validation Engine]
+    end
+
+    subgraph Layer3_Cloud [Layer 3: Cloud Database & Triggers]
+        PY_VAL -->|HTTPS REST POST\nSUPABASE_DIRECT Mode| DB_TEL[(telemetry Table\nPrimary Ingest)]
+        DB_TEL -->|BEFORE INSERT Trigger| TRG_GW[trg_verify_telemetry_gateway\nValidates Node-GW Relationship]
+        DB_TEL -->|AFTER INSERT Trigger| TRG_ALERT[trg_evaluate_telemetry\nAuto Alerts & Status Updates]
+        TRG_ALERT -->|Upsert Incident| DB_INC[(incidents Table)]
+        TRG_ALERT -->|Update Status| DB_NODES[(sensor_nodes Table)]
+        DB_TEL -->|PostgreSQL WAL| CDC[Supabase Realtime\nWebSocket Engine]
+    end
+
+    subgraph Layer4_UI [Layer 4: Tactical EOC Workstation]
+        CDC -->|wss:// Channels: telemetry, incidents| HOOK[useRealtimeDashboard Hook]
+        HOOK --> REACT_STATE[React 19 State Container]
+        REACT_STATE --> MAP_COMP[Leaflet GIS Tactical Map]
+        REACT_STATE --> CHART_COMP[Recharts Multi-Metric Visualizer]
+        REACT_STATE --> AUDIO_ALARM[Web Audio API Siren Synth]
+        REACT_STATE --> INCIDENT_RAIL[Active Incident Rail]
+    end
+</pre></div>
+
+<hr />
+<h2 id="2-hardware-embedded-firmware-architecture">2. Hardware &amp; Embedded Firmware Architecture</h2>
+<h3 id="21-sensor-node-hardware-specifications-pinout-firmwaresensor_nodesensor_nodeino">2.1 Sensor Node Hardware Specifications &amp; Pinout (<code>firmware/sensor_node/sensor_node.ino</code>)</h3>
+<p>The edge node operates on an <strong>ESP32 DevKit V1 (30-pin)</strong> board. Sensors sample the ambient environment every 2000 milliseconds:
+* <strong>DHT22 (AM2302) Temperature &amp; Humidity Sensor:</strong>
+  * Power: 3.3V / GND
+  * Signal Pin: <strong>GPIO 27</strong> (Digital bidirectional single-bus with internal 10k pull-up).
+  * Measurement Range: $-40^\circ\text{C}$ to $+80^\circ\text{C}$ ($\pm 0.5^\circ\text{C}$ accuracy), $0\text{--}100\%$ RH ($\pm 2\%$ accuracy).
+* <strong>MQ-2 Smoke &amp; Combustible Gas Sensor:</strong>
+  * Heater Power: 5.0V (VBUS / External rail), GND.
+  * Analog Output Pin: <strong>GPIO 34</strong> (Input-only ADC1 channel 6).
+  * Conversion: 12-bit Successive Approximation Register (SAR) ADC ($0\text{--}4095$ range).
+* <strong>Optical Infrared Flame Sensor:</strong>
+  * Power: 3.3V / GND.
+  * Analog Photodiode Output: <strong>GPIO 35</strong> (Input-only ADC1 channel 7).
+  * Characteristics: Inverted analog logic ($4095$ represents ambient dark infrared; values drop towards $0\text{--}500$ upon detecting direct 760nm–1100nm infrared hydrocarbon flame radiation).
+* <strong>Ai-Thinker Ra-02 (Semtech SX1278) LoRa Radio Module:</strong>
+  * Interface: Hardware SPI (Standard VSPI pins).
+  * Chip Select (<code>NSS</code>): <strong>GPIO 5</strong>
+  * Reset (<code>RST</code>): <strong>GPIO 14</strong>
+  * Interrupt (<code>DIO0</code>): <strong>GPIO 26</strong>
+  * Clock (<code>SCK</code>): <strong>GPIO 18</strong>
+  * Master In Slave Out (<code>MISO</code>): <strong>GPIO 19</strong>
+  * Master Out Slave In (<code>MOSI</code>): <strong>GPIO 23</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">CODE</div>
+  </div>
+  <pre><code>+-------------------------------------------------------------+
+|                     ESP32 DEVKIT V1                         |
+|                                                             |
+|   [GPIO 27] &lt;---- Data ----- [DHT22 Temp &amp; Humidity Sensor] |
+|   [GPIO 34] &lt;---- Analog --- [MQ-2 Gas &amp; Smoke Sensor (5V)] |
+|   [GPIO 35] &lt;---- Analog --- [Optical Flame Photodiode]     |
+|                                                             |
+|   [GPIO  5] ---- NSS -----\                                 |
+|   [GPIO 14] ---- RST ------\                                |
+|   [GPIO 26] &lt;--- DIO0 -----\  [Ai-Thinker Ra-02 SX1278]     |
+|   [GPIO 18] ---- SCK ------/  (433.0 MHz LoRa Module)       |
+|   [GPIO 19] &lt;--- MISO ----/                                 |
+|   [GPIO 23] ---- MOSI ---/                                  |
++-------------------------------------------------------------+
+</code></pre>
+</div>
+<h3 id="22-rf-modulation-parameters">2.2 RF Modulation Parameters</h3>
+<ul>
+<li><strong>Carrier Frequency:</strong> <code>433.0 MHz</code></li>
+<li><strong>Bandwidth (BW):</strong> <code>125 kHz</code></li>
+<li><strong>Spreading Factor (SF):</strong> <code>7</code> (Configured for high data rate and low latency within canopy bounds; expandable up to SF12 for multi-kilometer line of sight).</li>
+<li><strong>Coding Rate (CR):</strong> <code>4/5</code></li>
+<li><strong>Sync Word:</strong> <code>0x12</code> (Default private network sync word).</li>
+<li><strong>Preamble Length:</strong> <code>8 symbols</code></li>
+<li><strong>CRC:</strong> Hardware CRC enabled on all packets.</li>
+</ul>
+<h3 id="23-edge-packet-formatting">2.3 Edge Packet Formatting</h3>
+<p>The edge node formats readings into a compact JSON object broadcasted over LoRa:</p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;node_id&quot;: &quot;NODE-DEMO-01&quot;,
+  &quot;seq&quot;: 1024,
+  &quot;temp&quot;: 28.6,
+  &quot;hum&quot;: 72.3,
+  &quot;smoke&quot;: 1781,
+  &quot;flame&quot;: 4095,
+  &quot;alert&quot;: false
+}
+</code></pre>
+</div>
+<h3 id="24-base-station-gateway-firmware-firmwaregatewaygatewayino">2.4 Base Station Gateway Firmware (<code>firmware/gateway/gateway.ino</code>)</h3>
+<p>The base station listens continuously for incoming LoRa packets. When a packet passes hardware CRC:
+1. It reads the raw RF payload from the SX1278 FIFO buffer.
+2. It queries the SX1278 internal registers for Physical Layer metrics:
+   * <strong>RSSI (Received Signal Strength Indicator):</strong> Value in dBm (e.g., <code>-88 dBm</code>).
+   * <strong>SNR (Signal-to-Noise Ratio):</strong> Value in dB (e.g., <code>+7.5 dB</code>).
+3. It packages the raw JSON string with the physical metrics and outputs a framed string over USB UART at <strong>115200 baud</strong>:</p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">CODE</div>
+  </div>
+  <pre><code>GATEWAY_PACKET:{&quot;gw_id&quot;:&quot;GW-DEMO-01&quot;,&quot;rssi&quot;:-88,&quot;snr&quot;:7.5,&quot;payload&quot;:{&quot;node_id&quot;:&quot;NODE-DEMO-01&quot;,&quot;seq&quot;:1024,&quot;temp&quot;:28.6,&quot;hum&quot;:72.3,&quot;smoke&quot;:1781,&quot;flame&quot;:4095,&quot;alert&quot;:false}}
+</code></pre>
+</div>
+<hr />
+<h2 id="3-hardware-serial-bridge-architecture-bridgebridgepy">3. Hardware Serial Bridge Architecture (<code>bridge/bridge.py</code>)</h2>
+<p>The bridge is a resilient Python 3 daemon designed to bridge physical UART serial data into cloud web infrastructure.</p>
+<div class="mermaid-card"><pre class="mermaid">
+stateDiagram-v2
+    [*] --> SCANNING: Startup
+    SCANNING --> OPENING: Identify USB COM Port (Silicon Labs / CH340)
+    OPENING --> LISTENING: Baud 115200 Configured
+    OPENING --> SCANNING: Port Open Failure (Backoff 2s)
+
+    state LISTENING {
+        [*] --> READ_LINE: serial.readline()
+        READ_LINE --> FRAME_CHECK: Prefix == 'GATEWAY_PACKET:'?
+        FRAME_CHECK --> PARSE_JSON: Strip prefix & json.loads()
+        FRAME_CHECK --> READ_LINE: Ignore debug logs
+        PARSE_JSON --> VALIDATE_PHYSICAL: Physical Boundary Checks
+        VALIDATE_PHYSICAL --> POST_CLOUD: Boundary Valid
+        VALIDATE_PHYSICAL --> DROP_PACKET: Out of bounds
+        POST_CLOUD --> HTTP_SUCCESS: 200/201 Created
+        POST_CLOUD --> HTTP_DUPLICATE: 409 Conflict (Ignored)
+        POST_CLOUD --> HTTP_RETRY: 5xx / Network Error (Exp Backoff)
+        HTTP_SUCCESS --> READ_LINE
+        HTTP_DUPLICATE --> READ_LINE
+        HTTP_RETRY --> READ_LINE
+    }
+
+    LISTENING --> SCANNING: SerialException (Unplugged)
+</pre></div>
+
+<h3 id="31-validation-engine-boundaries">3.1 Validation Engine Boundaries</h3>
+<p>To prevent garbled memory, cosmic rays, or floating ADC pins from poisoning cloud analytics, <code>bridge.py</code> validates every field against hard physical boundaries before transmission:
+* Temperature: $-50.0^\circ\text{C} \le T \le +100.0^\circ\text{C}$
+* Humidity: $0.0\% \le H \le 100.0\%$
+* Smoke ADC: $0 \le \text{ADC} \le 4095$
+* Flame ADC: $0 \le \text{ADC} \le 4095$
+* RSSI: $-150 \le \text{RSSI} \le 0\text{ dBm}$
+* SNR: $-30.0 \le \text{SNR} \le +30.0\text{ dB}$</p>
+<h3 id="32-ingestion-modes">3.2 Ingestion Modes</h3>
+<ol>
+<li><strong><code>SUPABASE_DIRECT</code> (Default Production Mode):</strong>
+   * Transmits directly to <code>https://&lt;supabase_id&gt;.supabase.co/rest/v1/telemetry</code>.
+   * Authenticates using the Supabase Service Role Key (<code>apikey</code> and <code>Authorization: Bearer</code> headers).
+   * Benefits: Zero intermediary API latency, sub-50ms cloud ingest times.</li>
+<li><strong><code>API_GATEWAY</code> Mode:</strong>
+   * Transmits to Next.js API route <code>POST http://localhost:3000/api/telemetry</code>.
+   * Authenticates using a pre-shared bearer token (<code>TELEMETRY_INGEST_KEY</code>).</li>
+</ol>
+<hr />
+<h2 id="4-cloud-database-backend-stored-procedures-libschemasql">4. Cloud Database &amp; Backend Stored Procedures (<code>lib/schema.sql</code>)</h2>
+<p>The database is built on PostgreSQL 15 and leverages native relational constraints and PL/pgSQL triggers to handle edge ingestion logic inside the database engine.</p>
+<div class="mermaid-card"><pre class="mermaid">
+erDiagram
+    gateways ||--o{ sensor_nodes : "monitors"
+    gateways ||--o{ telemetry : "receives"
+    sensor_nodes ||--o{ telemetry : "originates"
+    sensor_nodes ||--o{ incidents : "triggers"
+
+    gateways {
+        varchar(64) gateway_id PK
+        varchar(128) name
+        decimal latitude
+        decimal longitude
+        varchar(20) status
+        timestamptz last_seen_at
+    }
+
+    sensor_nodes {
+        varchar(64) node_id PK
+        varchar(64) gateway_id FK
+        varchar(128) name
+        decimal latitude
+        decimal longitude
+        varchar(20) status
+        timestamptz last_telemetry_at
+        float battery_level
+    }
+
+    telemetry {
+        bigserial id PK
+        varchar(64) node_id FK
+        varchar(64) gateway_id FK
+        bigint sequence_number
+        float temperature_c
+        float humidity_pct
+        int smoke_raw
+        int flame_raw
+        boolean alert_triggered
+        int rssi_dbm
+        float snr_db
+        timestamptz created_at
+    }
+
+    incidents {
+        bigserial id PK
+        varchar(64) node_id FK
+        varchar(32) alert_type
+        varchar(20) severity
+        varchar(20) status
+        jsonb metadata
+        timestamptz triggered_at
+        timestamptz resolved_at
+    }
+</pre></div>
+
+<h3 id="41-database-trigger-logic">4.1 Database Trigger Logic</h3>
+<h4 id="a-gateway-node-association-trigger-trg_verify_telemetry_gateway">A. Gateway-Node Association Trigger (<code>trg_verify_telemetry_gateway</code>)</h4>
+<p>Before any telemetry row is committed, this <code>BEFORE INSERT</code> trigger ensures that the <code>gateway_id</code> transmitting the telemetry is valid and updates the gateway's <code>last_seen_at</code> timestamp.</p>
+<h4 id="b-automated-incident-evaluation-trigger-trg_evaluate_telemetry">B. Automated Incident Evaluation Trigger (<code>trg_evaluate_telemetry</code>)</h4>
+<p>This <code>AFTER INSERT</code> trigger is the core autonomic alert engine:
+1. <strong>Status Evaluation:</strong>
+   * If <code>flame_raw &lt; 100</code> (Infrared flame detected) OR <code>smoke_raw &gt; 2000</code> (Dense smoke detected), the node is flagged in emergency condition.
+   * If emergency condition is true, <code>sensor_nodes.status</code> is updated to <code>'ALERT'</code>.
+   * If values return to normal ($T &lt; 45^\circ\text{C}$, $\text{Smoke} \le 1500$, $\text{Flame} \ge 1000$), status transitions back to <code>'ONLINE'</code>.
+2. <strong>Incident Debouncing:</strong>
+   * Checks for any existing <code>'ACTIVE'</code> incident on the same <code>node_id</code>.
+   * If no active incident exists, it inserts a new incident record with severity <code>'CRITICAL'</code>, capturing the trigger metrics in <code>metadata</code>.
+   * If an active incident already exists, it avoids duplicate ticketing while updating incident logs.</p>
+<hr />
+<h2 id="5-tactical-eoc-frontend-architecture-nextjs-15-react-19">5. Tactical EOC Frontend Architecture (Next.js 15 &amp; React 19)</h2>
+<h3 id="51-component-hierarchy">5.1 Component Hierarchy</h3>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">CODE</div>
+  </div>
+  <pre><code>app/layout.tsx (Theme Provider, Global CSS)
+└── app/page.tsx (Workstation Orchestrator)
+    ├── components/Header.tsx (Status Badges, Connection State, Workspace Switcher, Mute Toggle)
+    ├── View: 'operations' (Tactical Operations Mode)
+    │   ├── components/OperatorMap.tsx (Leaflet GIS Tactical Grid)
+    │   │   ├── Dynamic Pulsing Map Markers
+    │   │   ├── Coverage Radii Overlays
+    │   │   └── Interactive Node Inspection Popups
+    │   ├── components/ActiveIncidentsPanel.tsx (Real-time Incident Dispatch Rail)
+    │   ├── components/DeviceHealthPanel.tsx (Collapsible Node/Gateway Quick Status)
+    │   └── components/FleetHardware.tsx (Hardware Specifications &amp; Quick Commands)
+    ├── View: 'telemetry' (Data Analytics Mode)
+    │   ├── components/TelemetryCharts.tsx (Recharts Multi-Metric Time Series)
+    │   └── components/LiveTelemetryPanel.tsx (Streaming Ingestion Log &amp; CSV/JSON Export)
+    └── View: 'system' (Engineering &amp; Diagnostic Mode)
+        ├── components/DeviceManagement.tsx (Gateway/Node Registration &amp; Firmware Specs)
+        └── components/SchemaViewer.tsx (Live Database Schema &amp; SQL Inspector)
+</code></pre>
+</div>
+<h3 id="52-realtime-data-subscription-engine-libhooksuserealtimedashboardts">5.2 Realtime Data Subscription Engine (<code>lib/hooks/useRealtimeDashboard.ts</code>)</h3>
+<p>The application subscribes to Supabase Realtime via WebSockets:</p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">TYPESCRIPT</div>
+  </div>
+  <pre><code class="language-typescript">const channel = supabase
+  .channel('eoc_realtime_stream')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'telemetry' }, (payload) =&gt; {
+    handleIncomingTelemetry(payload.new as TelemetryRecord);
+  })
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'incidents' }, (payload) =&gt; {
+    handleIncidentUpdate(payload);
+  })
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sensor_nodes' }, (payload) =&gt; {
+    handleNodeStatusChange(payload.new as SensorNode);
+  })
+  .subscribe();
+</code></pre>
+</div>
+<h3 id="53-zero-dependency-browser-audio-synthesizer-libaudiots">5.3 Zero-Dependency Browser Audio Synthesizer (<code>lib/audio.ts</code>)</h3>
+<p>Rather than relying on large MP3 audio assets that may fail to load or be blocked by cross-origin policies, the application utilizes the native browser <strong>Web Audio API</strong>:
+* Creates an <code>AudioContext</code> and dual <code>OscillatorNode</code> instances.
+* Synthesizes an emergency modulation: primary frequency $880\text{ Hz}$ modulating with an LFO at $440\text{ Hz}$ across square waveforms.
+* Controls volume through a <code>GainNode</code> and safely shuts down upon operator acknowledgment or mute toggle.</p>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>

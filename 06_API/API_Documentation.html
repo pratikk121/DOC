@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REST API Specification & Endpoint Documentation | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>REST API Specification & Endpoint Documentation</h1>
+      </div>
+
+      <article>
+<h2 id="1-authentication-security-model">1. Authentication &amp; Security Model</h2>
+<p>The Wildfire Operations Center exposes both an <strong>Application HTTP API</strong> (Next.js App Router routes) and a <strong>Direct Database REST API</strong> (Supabase PostgREST).</p>
+<h3 id="11-ingestion-authentication">1.1 Ingestion Authentication</h3>
+<ul>
+<li><strong>Header Format:</strong> <code>Authorization: Bearer &lt;GATEWAY_API_KEY&gt;</code> or <code>x-api-key: &lt;GATEWAY_API_KEY&gt;</code>.</li>
+<li><strong>Fail-Closed Policy:</strong> If <code>GATEWAY_API_KEY</code> is not set or set to an insecure default placeholder, the server immediately returns <code>500 Server Misconfiguration</code> and refuses all writes.</li>
+<li><strong>Payload Size Limit:</strong> Ingestion requests are strictly limited to <strong>64 KB</strong> (<code>Content-Length &lt;= 65536 bytes</code>). Payloads exceeding this return <code>413 Payload Too Large</code>.</li>
+</ul>
+<hr />
+<h2 id="2-telemetry-endpoints">2. Telemetry Endpoints</h2>
+<h3 id="21-ingest-telemetry-packet">2.1 Ingest Telemetry Packet</h3>
+<ul>
+<li><strong>Method:</strong> <code>POST</code></li>
+<li><strong>Route:</strong> <code>/api/telemetry</code></li>
+<li><strong>Purpose:</strong> Ingests live LoRa packets forwarded by the Python bridge or simulator.</li>
+<li><strong>Headers:</strong></li>
+<li><code>Content-Type: application/json</code></li>
+<li><code>Authorization: Bearer &lt;GATEWAY_API_KEY&gt;</code></li>
+</ul>
+<p><strong>Request Body Example (Structured JSON):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;gatewayId&quot;: &quot;GW-DEMO-01&quot;,
+  &quot;nodeId&quot;: &quot;NODE-DEMO-01&quot;,
+  &quot;packetSequence&quot;: 1025,
+  &quot;temperature&quot;: 29.4,
+  &quot;humidity&quot;: 68.2,
+  &quot;smokeAdc&quot;: 1820,
+  &quot;flameRaw&quot;: 4095,
+  &quot;flameDetected&quot;: false,
+  &quot;rssi&quot;: -85,
+  &quot;snr&quot;: 8.2,
+  &quot;batteryVoltage&quot;: 3.92
+}
+</code></pre>
+</div>
+<p><strong>Request Body Example (Raw Gateway Serial Framing):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;rawPayload&quot;: &quot;GATEWAY_PACKET:{\&quot;gw_id\&quot;:\&quot;GW-DEMO-01\&quot;,\&quot;rssi\&quot;:-85,\&quot;snr\&quot;:8.2,\&quot;payload\&quot;:{\&quot;node_id\&quot;:\&quot;NODE-DEMO-01\&quot;,\&quot;seq\&quot;:1025,\&quot;temp\&quot;:29.4,\&quot;hum\&quot;:68.2,\&quot;smoke\&quot;:1820,\&quot;flame\&quot;:4095,\&quot;alert\&quot;:false}}&quot;
+}
+</code></pre>
+</div>
+<p><strong>Success Response (HTTP 201 Created):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;reading&quot;: {
+    &quot;id&quot;: 14201,
+    &quot;nodeId&quot;: &quot;NODE-DEMO-01&quot;,
+    &quot;gatewayId&quot;: &quot;GW-DEMO-01&quot;,
+    &quot;packetSequence&quot;: 1025,
+    &quot;temperature&quot;: 29.4,
+    &quot;humidity&quot;: 68.2,
+    &quot;smokeAdc&quot;: 1820,
+    &quot;flameRaw&quot;: 4095,
+    &quot;flameDetected&quot;: false,
+    &quot;rssi&quot;: -85,
+    &quot;snr&quot;: 8.2,
+    &quot;timestamp&quot;: &quot;2026-09-26T03:15:00.000Z&quot;
+  },
+  &quot;alertsTriggered&quot;: [],
+  &quot;timestamp&quot;: &quot;2026-09-26T03:15:00.120Z&quot;
+}
+</code></pre>
+</div>
+<p><strong>Duplicate Packet Response (HTTP 200 OK):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;duplicate&quot;: true,
+  &quot;message&quot;: &quot;Duplicate packet acknowledged&quot;,
+  &quot;timestamp&quot;: &quot;2026-09-26T03:15:00.120Z&quot;
+}
+</code></pre>
+</div>
+<p><strong>Error Responses:</strong>
+* <code>400 Bad Request</code>: Malformed JSON or out-of-bounds physical sensor values.
+* <code>401 Unauthorized</code>: Missing or invalid bearer token.
+* <code>413 Payload Too Large</code>: Request body exceeds 64 KB.
+* <code>500 Internal Server Error</code>: Database connection failure or unconfigured secret key.</p>
+<hr />
+<h3 id="22-query-telemetry-readings">2.2 Query Telemetry Readings</h3>
+<ul>
+<li><strong>Method:</strong> <code>GET</code></li>
+<li><strong>Route:</strong> <code>/api/telemetry</code></li>
+<li><strong>Query Parameters:</strong></li>
+<li><code>nodeId</code> <em>(optional, string)</em>: Filter records by specific node ID.</li>
+<li><code>limit</code> <em>(optional, integer)</em>: Maximum number of rows to return (default: <code>80</code>, max: <code>1000</code>).</li>
+</ul>
+<p><strong>Response Example (HTTP 200 OK):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;readings&quot;: [
+    {
+      &quot;id&quot;: 14201,
+      &quot;nodeId&quot;: &quot;NODE-DEMO-01&quot;,
+      &quot;gatewayId&quot;: &quot;GW-DEMO-01&quot;,
+      &quot;packetSequence&quot;: 1025,
+      &quot;temperature&quot;: 29.4,
+      &quot;humidity&quot;: 68.2,
+      &quot;smokeAdc&quot;: 1820,
+      &quot;flameRaw&quot;: 4095,
+      &quot;flameDetected&quot;: false,
+      &quot;rssi&quot;: -85,
+      &quot;snr&quot;: 8.2,
+      &quot;timestamp&quot;: &quot;2026-09-26T03:15:00.000Z&quot;
+    }
+  ],
+  &quot;totalBuffered&quot;: 14201,
+  &quot;packetCounter&quot;: 14201
+}
+</code></pre>
+</div>
+<hr />
+<h2 id="3-node-fleet-management-endpoints">3. Node Fleet Management Endpoints</h2>
+<h3 id="31-list-sensor-nodes">3.1 List Sensor Nodes</h3>
+<ul>
+<li><strong>Method:</strong> <code>GET</code></li>
+<li><strong>Route:</strong> <code>/api/nodes</code></li>
+<li><strong>Query Parameters:</strong></li>
+<li><code>gateway_id</code> <em>(optional, string)</em>: Filter nodes assigned to a specific base station.</li>
+</ul>
+<p><strong>Response Example (HTTP 200 OK):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;nodes&quot;: [
+    {
+      &quot;node_id&quot;: &quot;NODE-DEMO-01&quot;,
+      &quot;gateway_id&quot;: &quot;GW-DEMO-01&quot;,
+      &quot;name&quot;: &quot;North Pine Sector Alpha&quot;,
+      &quot;sector&quot;: &quot;Sector Alpha&quot;,
+      &quot;latitude&quot;: 37.7749,
+      &quot;longitude&quot;: -122.4194,
+      &quot;elevation&quot;: 180,
+      &quot;status&quot;: &quot;ONLINE&quot;,
+      &quot;battery_level&quot;: 94.5,
+      &quot;last_telemetry_at&quot;: &quot;2026-09-26T03:15:00.000Z&quot;
+    }
+  ],
+  &quot;stats&quot;: {
+    &quot;total&quot;: 4,
+    &quot;online&quot;: 3,
+    &quot;alert&quot;: 1,
+    &quot;warning&quot;: 0,
+    &quot;offline&quot;: 0
+  },
+  &quot;timestamp&quot;: &quot;2026-09-26T03:15:00.000Z&quot;
+}
+</code></pre>
+</div>
+<hr />
+<h3 id="32-register-new-sensor-node">3.2 Register New Sensor Node</h3>
+<ul>
+<li><strong>Method:</strong> <code>POST</code></li>
+<li><strong>Route:</strong> <code>/api/nodes</code></li>
+<li><strong>Request Body:</strong></li>
+</ul>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;node_id&quot;: &quot;NODE-FOREST-02&quot;,
+  &quot;name&quot;: &quot;Ridge Sector Bravo&quot;,
+  &quot;gateway_id&quot;: &quot;GW-DEMO-01&quot;,
+  &quot;sector&quot;: &quot;Sector Bravo&quot;,
+  &quot;latitude&quot;: 37.7785,
+  &quot;longitude&quot;: -122.4140,
+  &quot;elevation&quot;: 240,
+  &quot;status&quot;: &quot;REGISTERED&quot;
+}
+</code></pre>
+</div>
+<ul>
+<li><strong>Success Response:</strong> <code>HTTP 201 Created</code> with created node object.</li>
+</ul>
+<hr />
+<h3 id="33-update-sensor-node">3.3 Update Sensor Node</h3>
+<ul>
+<li><strong>Method:</strong> <code>PATCH</code></li>
+<li><strong>Route:</strong> <code>/api/nodes</code></li>
+<li><strong>Request Body:</strong></li>
+</ul>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;node_id&quot;: &quot;NODE-FOREST-02&quot;,
+  &quot;name&quot;: &quot;Ridge Sector Bravo (Renamed)&quot;,
+  &quot;latitude&quot;: 37.7790,
+  &quot;longitude&quot;: -122.4150
+}
+</code></pre>
+</div>
+<ul>
+<li><strong>Success Response:</strong> <code>HTTP 200 OK</code>.</li>
+</ul>
+<hr />
+<h3 id="34-delete-decommission-sensor-node">3.4 Delete / Decommission Sensor Node</h3>
+<ul>
+<li><strong>Method:</strong> <code>DELETE</code></li>
+<li><strong>Route:</strong> <code>/api/nodes?node_id=NODE-FOREST-02</code></li>
+<li><strong>Success Response (HTTP 200 OK):</strong></li>
+</ul>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;action&quot;: &quot;deleted&quot;,
+  &quot;message&quot;: &quot;Node NODE-FOREST-02 removed from fleet registry.&quot;
+}
+</code></pre>
+</div>
+<hr />
+<h2 id="4-incidents-alert-management-endpoints">4. Incidents &amp; Alert Management Endpoints</h2>
+<h3 id="41-get-active-incidents">4.1 Get Active Incidents</h3>
+<ul>
+<li><strong>Method:</strong> <code>GET</code></li>
+<li><strong>Route:</strong> <code>/api/alerts</code></li>
+</ul>
+<p><strong>Response Example (HTTP 200 OK):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;alerts&quot;: [
+    {
+      &quot;id&quot;: 802,
+      &quot;nodeId&quot;: &quot;NODE-DEMO-01&quot;,
+      &quot;type&quot;: &quot;WILDFIRE_FLAME&quot;,
+      &quot;severity&quot;: &quot;CRITICAL&quot;,
+      &quot;title&quot;: &quot;Active Wildfire Flame Detected&quot;,
+      &quot;status&quot;: &quot;ACTIVE&quot;,
+      &quot;metadata&quot;: {
+        &quot;flame_raw&quot;: 45,
+        &quot;smoke_raw&quot;: 2840,
+        &quot;temperature_c&quot;: 64.2
+      },
+      &quot;triggeredAt&quot;: &quot;2026-09-26T03:10:00.000Z&quot;,
+      &quot;acknowledgedAt&quot;: null,
+      &quot;resolvedAt&quot;: null
+    }
+  ],
+  &quot;activeCount&quot;: 1,
+  &quot;criticalCount&quot;: 1
+}
+</code></pre>
+</div>
+<hr />
+<h3 id="42-acknowledge-or-resolve-incident">4.2 Acknowledge or Resolve Incident</h3>
+<ul>
+<li><strong>Method:</strong> <code>POST</code></li>
+<li><strong>Route:</strong> <code>/api/alerts</code></li>
+<li><strong>Request Body:</strong></li>
+</ul>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;alertId&quot;: 802,
+  &quot;action&quot;: &quot;acknowledge&quot;,
+  &quot;operatorName&quot;: &quot;Dispatcher Johnson&quot;,
+  &quot;operatorNotes&quot;: &quot;Ranger Unit 4 dispatched to Sector Alpha.&quot;
+}
+</code></pre>
+</div>
+<p><strong>Response Example (HTTP 200 OK):</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;alert&quot;: {
+    &quot;id&quot;: 802,
+    &quot;status&quot;: &quot;ACKNOWLEDGED&quot;,
+    &quot;acknowledgedAt&quot;: &quot;2026-09-26T03:12:30.000Z&quot;
+  }
+}
+</code></pre>
+</div>
+<hr />
+<h2 id="5-data-export-endpoint">5. Data Export Endpoint</h2>
+<h3 id="51-export-telemetry">5.1 Export Telemetry</h3>
+<ul>
+<li><strong>Method:</strong> <code>GET</code></li>
+<li><strong>Route:</strong> <code>/api/export</code></li>
+<li><strong>Query Parameters:</strong></li>
+<li><code>format</code> <em>(string)</em>: <code>csv</code> (default) or <code>json</code>.</li>
+<li><code>limit</code> <em>(integer)</em>: Row limit (default: <code>5000</code>).</li>
+</ul>
+<p><strong>CSV Response Headers:</strong>
+* <code>Content-Type: text/csv</code>
+* <code>Content-Disposition: attachment; filename="wildfire_telemetry_&lt;timestamp&gt;.csv"</code></p>
+<hr />
+<h2 id="6-direct-supabase-ingestion-postgrest">6. Direct Supabase Ingestion (PostgREST)</h2>
+<p>Used in <code>bridge.py</code> under <code>SUPABASE_DIRECT</code> mode:
+* <strong>Method:</strong> <code>POST</code>
+* <strong>Route:</strong> <code>https://&lt;project-ref&gt;.supabase.co/rest/v1/telemetry</code>
+* <strong>Headers:</strong>
+  * <code>apikey: &lt;SUPABASE_SERVICE_ROLE_KEY&gt;</code>
+  * <code>Authorization: Bearer &lt;SUPABASE_SERVICE_ROLE_KEY&gt;</code>
+  * <code>Content-Type: application/json</code>
+  * <code>Prefer: return=minimal</code>
+* <strong>Payload:</strong></p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">JSON</div>
+  </div>
+  <pre><code class="language-json">{
+  &quot;node_id&quot;: &quot;NODE-DEMO-01&quot;,
+  &quot;gateway_id&quot;: &quot;GW-DEMO-01&quot;,
+  &quot;sequence_number&quot;: 1025,
+  &quot;temperature_c&quot;: 28.6,
+  &quot;humidity_pct&quot;: 72.3,
+  &quot;smoke_raw&quot;: 1781,
+  &quot;flame_raw&quot;: 4095,
+  &quot;alert_triggered&quot;: false,
+  &quot;rssi_dbm&quot;: -88,
+  &quot;snr_db&quot;: 7.5
+}
+</code></pre>
+</div>
+<ul>
+<li><strong>Status Codes:</strong></li>
+<li><code>201 Created</code>: Telemetry successfully inserted.</li>
+<li><code>409 Conflict</code>: Duplicate sequence packet ignored by database uniqueness constraint.</li>
+</ul>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>

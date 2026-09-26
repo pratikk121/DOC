@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Questions & Deep-Dive Viva Preparation | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>Technical Questions & Deep-Dive Viva Preparation</h1>
+      </div>
+
+      <article>
+<h2 id="1-embedded-systems-sensor-hardware">1. Embedded Systems &amp; Sensor Hardware</h2>
+<h3 id="q1-why-did-you-connect-the-analog-sensors-mq-2-and-flame-ir-to-gpio-34-and-gpio-35-specifically">Q1: Why did you connect the analog sensors (MQ-2 and Flame IR) to GPIO 34 and GPIO 35 specifically?</h3>
+<p><strong>Answer:</strong><br />
+"On the ESP32 microcontroller, analog-to-digital converter channels are split between <strong>ADC1</strong> and <strong>ADC2</strong>.
+* <strong>ADC2</strong> (channels on GPIO 0, 2, 4, 12, 13, 14, 15, 25, 26, 27) is shared internally with the ESP32 Wi-Fi / RF subsystem driver. Whenever Wi-Fi is initialized or hardware interrupts fire, ADC2 readings fail or return corrupt values.
+* <strong>ADC1</strong> (GPIO 32, 33, 34, 35, 36, 39) is completely independent of the RF subsystem.
+* Furthermore, <strong>GPIO 34 and GPIO 35</strong> are input-only pins without internal software pull-up/pull-down resistors, making them ideal, high-impedance analog inputs for external analog sensor outputs."</p>
+<hr />
+<h3 id="q2-why-does-the-optical-flame-sensor-output-high-values-in-normal-ambient-light-and-drop-to-near-zero-during-a-fire">Q2: Why does the optical flame sensor output high values in normal ambient light and drop to near zero during a fire?</h3>
+<p><strong>Answer:</strong><br />
+"The optical flame sensor utilizes an NPN-type infrared photodiode sensitive to the $760\text{ nm}$ to $1100\text{ nm}$ optical emission spectrum typical of hydrocarbon flames. In the absence of flame, the photodiode exhibits high internal reverse resistance, pulling the analog output close to the $3.3\text{V}$ rail ($4095\text{ ADC}$). When exposed to intense infrared radiation from an open flame, the photon-induced electron flow drops the internal resistance sharply, causing the analog voltage on GPIO 35 to collapse towards $0\text{V}$ ($0\text{--}100\text{ ADC}$). Our firmware and database triggers explicitly check for <code>flame_raw &lt; 100</code> to register a positive detection."</p>
+<hr />
+<h3 id="q3-how-does-the-dht22-single-wire-communication-protocol-work-on-gpio-27">Q3: How does the DHT22 single-wire communication protocol work on GPIO 27?</h3>
+<p><strong>Answer:</strong><br />
+"The DHT22 (AM2302) uses a proprietary bidirectional single-wire time-division multiplexing protocol:
+1. <strong>Start Signal:</strong> The ESP32 pulls the data line low for at least $1\text{ ms}$ (typically $18\text{ ms}$) and then releases it high for $20\text{--}40\,\mu\text{s}$.
+2. <strong>Sensor Response:</strong> The DHT22 responds by pulling the line low for $80\,\mu\text{s}$, followed by high for $80\,\mu\text{s}$.
+3. <strong>Data Transmission:</strong> The sensor transmits 40 bits of data (16 bits humidity, 16 bits temperature, 8 bits parity checksum). A bit <code>'0'</code> is represented by a $50\,\mu\text{s}$ low pulse followed by a $26\text{--}28\,\mu\text{s}$ high pulse; a bit <code>'1'</code> is represented by a $50\,\mu\text{s}$ low pulse followed by a $70\,\mu\text{s}$ high pulse.
+4. <strong>Checksum Verification:</strong> The final 8-bit checksum must equal the lower 8 bits of the sum of the data bytes; otherwise, the packet is discarded."</p>
+<hr />
+<h3 id="q4-explain-lora-modulation-spreading-factor-and-bandwidth-used-in-your-sx1278-setup">Q4: Explain LoRa Modulation, Spreading Factor, and Bandwidth used in your SX1278 setup.</h3>
+<p><strong>Answer:</strong><br />
+"LoRa (Long Range) is a physical-layer wireless modulation based on <strong>Chirp Spread Spectrum (CSS)</strong> technology.
+* <strong>Carrier Frequency ($433.0\text{ MHz}$):</strong> A sub-GHz Industrial, Scientific, and Medical (ISM) frequency band with superior foliage penetration and diffraction characteristics compared to $2.4\text{ GHz}$.
+* <strong>Bandwidth ($\text{BW} = 125\text{ kHz}$):</strong> Defines the frequency sweep width of the chirp signal. A $125\text{ kHz}$ bandwidth offers a proven balance between transmission data rate and receiver noise floor sensitivity.
+* <strong>Spreading Factor ($\text{SF} = 7$):</strong> The number of chirps per symbol is $2^{\text{SF}} = 2^7 = 128$ chips per symbol. SF7 yields a fast on-air transmission time ($\approx 40\text{--}60\text{ ms}$ per packet), keeping power consumption low.
+* <strong>Coding Rate ($\text{CR} = 4/5$):</strong> Cyclic error-correcting code where 4 bits of payload data include 1 redundant error-correction bit, allowing the receiver to reconstruct corrupted bits without retransmission."</p>
+<hr />
+<h2 id="2-python-hardware-bridge-middleware">2. Python Hardware Bridge &amp; Middleware</h2>
+<h3 id="q5-how-does-bridgepy-maintain-reliable-serial-communication-without-crashing-when-the-gateway-is-unplugged">Q5: How does <code>bridge.py</code> maintain reliable serial communication without crashing when the gateway is unplugged?</h3>
+<p><strong>Answer:</strong><br />
+"The bridge is engineered as a state-machine loop wrapped in a robust exception-handling hierarchy:
+1. <strong>Auto-Discovery:</strong> On startup, <code>find_gateway_port()</code> scans system COM ports (identifying Silicon Labs CP210x / CH340 / FTDI USB-UART chips).
+2. <strong>Reconnection Loop:</strong> If the gateway is unplugged during operation, the serial read raises a <code>serial.SerialException</code>. The bridge traps the exception, enters a safe <code>RECONNECTING</code> state, logs the event, and uses an exponential backoff retry loop ($2\text{s}, 4\text{s}, 8\text{s}\dots$) to poll for USB re-insertion without terminating the Python process.
+3. <strong>Line-Buffering &amp; Framing:</strong> The bridge reads lines using <code>serial.readline()</code> and validates that the line begins with the exact prefix <code>GATEWAY_PACKET:</code>. Any unstructured microcontroller boot logs or noise are filtered out before JSON parsing."</p>
+<hr />
+<h3 id="q6-how-does-the-system-prevent-duplicate-packet-entries-during-rf-retransmissions">Q6: How does the system prevent duplicate packet entries during RF retransmissions?</h3>
+<p><strong>Answer:</strong><br />
+"Deduplication is enforced at two distinct tiers:
+1. <strong>Database Tier:</strong> The <code>telemetry</code> table has a composite unique constraint: <code>UNIQUE (node_id, sequence_number)</code>. If the same packet sequence is inserted twice, PostgreSQL raises error code <code>23505 (unique_violation)</code>.
+2. <strong>Bridge / API Tier:</strong>
+   * In <code>SUPABASE_DIRECT</code> mode, Supabase returns <code>HTTP 409 Conflict</code>. <code>bridge.py</code> traps the 409 status and logs <code>[INFO] [SUPABASE] status=409 (Duplicate packet ignored)</code> without treating it as a failure.
+   * In <code>API_GATEWAY</code> mode, the <code>/api/telemetry</code> handler detects the existing sequence and returns <code>HTTP 200 OK</code> with <code>{ duplicate: true }</code>, ensuring the edge bridge does not get stuck in an unnecessary retry loop."</p>
+<hr />
+<h2 id="3-frontend-architecture-real-time-sync">3. Frontend Architecture &amp; Real-Time Sync</h2>
+<h3 id="q7-why-did-you-use-nextjs-15-app-router-instead-of-pages-router-or-plain-react-vite">Q7: Why did you use Next.js 15 App Router instead of Pages Router or plain React Vite?</h3>
+<p><strong>Answer:</strong><br />
+"Next.js 15 App Router provides several key architectural advantages:
+1. <strong>Unified Serverless API Routes:</strong> Eliminates the need to maintain a separate Node.js Express server; all REST endpoints (<code>/api/telemetry</code>, <code>/api/nodes</code>, <code>/api/alerts</code>, <code>/api/export</code>) run directly on edge serverless functions.
+2. <strong>React 19 Server &amp; Client Components:</strong> Heavy static elements (schema viewer layouts, navigation headers) render as fast Server Components, while interactive dashboards (<code>OperatorMap.tsx</code>, <code>TelemetryCharts.tsx</code>) run as dedicated Client Components with <code>'use client'</code>.
+3. <strong>Zero-Configuration Production Builds:</strong> Built-in TypeScript compiler, Tailwind CSS v4 engine, and seamless deployment on Vercel."</p>
+<hr />
+<h3 id="q8-how-do-you-prevent-leaflet-map-crashes-during-nextjs-server-side-rendering-ssr">Q8: How do you prevent Leaflet map crashes during Next.js Server-Side Rendering (SSR)?</h3>
+<p><strong>Answer:</strong><br />
+"Leaflet depends heavily on browser window globals (<code>window</code>, <code>document</code>, <code>navigator</code>). During Next.js Server-Side Rendering on Node.js/Vercel, these objects do not exist, which causes Leaflet to throw a fatal <code>ReferenceError: window is not defined</code>.<br />
+We resolved this by importing the map component dynamically with SSR explicitly disabled:</p>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">TYPESCRIPT</div>
+  </div>
+  <pre><code class="language-typescript">const OperatorMap = dynamic(() =&gt; import('@/components/OperatorMap'), {
+  ssr: false,
+  loading: () =&gt; &lt;div className=\&quot;h-full w-full bg-slate-900 animate-pulse\&quot; /&gt;
+});
+</code></pre>
+</div>
+<p>This guarantees Leaflet initializes only on the client browser after DOM hydration."</p>
+<hr />
+<h3 id="q9-how-is-the-audio-siren-implemented-without-external-audio-files">Q9: How is the audio siren implemented without external audio files?</h3>
+<p><strong>Answer:</strong><br />
+"In <code>lib/audio.ts</code>, we implemented a browser-native synthesizer using the <strong>Web Audio API</strong>:
+1. It instantiates an <code>AudioContext</code> and creates an <code>OscillatorNode</code> generating a square waveform.
+2. It modulates the frequency between $880\text{ Hz}$ (High tone) and $440\text{ Hz}$ (Low tone) at 2 Hz intervals to mimic a dual-tone emergency vehicle siren.
+3. Audio gain is routed through a <code>GainNode</code> for smooth volume ramping and instantaneous muting.
+This approach eliminates network bandwidth overhead, eliminates 404 missing asset errors, and operates completely offline."</p>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture Questions & System Design Viva Preparation | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>Architecture Questions & System Design Viva Preparation</h1>
+      </div>
+
+      <article>
+<h2 id="1-high-level-architectural-decisions">1. High-Level Architectural Decisions</h2>
+<h3 id="q1-explain-the-rationale-behind-the-4-tier-architecture-edge-to-bridge-to-database-to-eoc-ui">Q1: Explain the rationale behind the 4-tier architecture (Edge $\to$ Bridge $\to$ Database $\to$ EOC UI).</h3>
+<p><strong>Answer:</strong><br />
+"The 4-tier architecture ensures strict separation of concerns, scalability, and physical fault isolation:
+1. <strong>Edge Sensing Layer (ESP32):</strong> Dedicated exclusively to deterministic physical sensor sampling and low-power RF broadcast without memory-heavy TCP/IP networking stacks.
+2. <strong>Bridge / Ingestion Layer (Python on Base Station Host):</strong> Decouples hardware serial protocols (UART) from cloud web APIs, handling COM port discovery, physical range boundary sanitization, and network retry backoff.
+3. <strong>Database &amp; Autonomic Logic Layer (PostgreSQL / Supabase):</strong> Serves as the single source of truth; stored triggers evaluate fire threats and debounce alarms at the database layer rather than relying on an intermediate Node.js daemon that could crash.
+4. <strong>Presentation Layer (Next.js 15):</strong> High-performance tactical dashboard focused solely on rendering GIS maps, time-series charts, and acoustic alert dispatching via reactive WebSocket streams."</p>
+<hr />
+<h3 id="q2-why-did-you-choose-433-mhz-lora-over-24-ghz-wi-fi-zigbee-bluetooth-or-cellular-4g5g">Q2: Why did you choose 433 MHz LoRa over 2.4 GHz Wi-Fi, Zigbee, Bluetooth, or Cellular (4G/5G)?</h3>
+<p><strong>Answer:</strong><br />
+"Wireless propagation in dense forest environments is governed by the <strong>Friis Transmission Equation</strong> and the <strong>Modified Exponential Decay Model for Foliage Loss</strong>:
+1. <strong>Foliage &amp; Moisture Attenuation:</strong> Trees and wet foliage absorb $2.4\text{ GHz}$ signals (Wi-Fi, Bluetooth, Zigbee) rapidly because the wavelength ($\lambda \approx 12.5\text{ cm}$) resonates closely with leaf dimensions and moisture droplets. In contrast, $433\text{ MHz}$ signals ($\lambda \approx 69.3\text{ cm}$) have a wavelength larger than typical leaves and needles, enabling diffraction around obstacles and penetrating deep canopy vegetation with minimal attenuation.
+2. <strong>Infrastructure Independence:</strong> Cellular (4G/5G/NB-IoT) requires terrestrial base station towers, which do not exist in wilderness national parks and mountainous valleys.
+3. <strong>Power Consumption:</strong> LoRa transmitters consume $\approx 100\text{--}120\text{ mA}$ during transmission for fractions of a second, compared to Cellular modules (SIM800/SIM7600) which require 2A burst currents, making solar-battery operation impractical."</p>
+<hr />
+<h3 id="q3-why-did-you-implement-fire-threat-detection-inside-database-triggers-plpgsql-rather-than-a-backend-cron-or-polling-service">Q3: Why did you implement fire threat detection inside Database Triggers (<code>PL/pgSQL</code>) rather than a backend cron or polling service?</h3>
+<p><strong>Answer:</strong><br />
+"Implementing business logic in database triggers (<code>trg_evaluate_telemetry</code>) delivers three major advantages:
+1. <strong>Zero Latency (Immediate Execution):</strong> The trigger fires synchronously inside the database transaction <em>immediately</em> upon row insertion. There is zero polling interval or cron delay.
+2. <strong>Atomic Consistency:</strong> The transition of <code>sensor_nodes.status = 'ALERT'</code> and the insertion into <code>incidents</code> occur within the exact same database transaction as the telemetry row insert, guaranteeing no inconsistent intermediary states.
+3. <strong>Resilience to Application Server Downtime:</strong> Even if the web application or API server restarts or experiences high traffic, the database continues evaluating incoming telemetry from field gateways autonomously."</p>
+<hr />
+<h3 id="q4-compare-supabase_direct-mode-and-api_gateway-mode-in-your-python-bridge">Q4: Compare <code>SUPABASE_DIRECT</code> mode and <code>API_GATEWAY</code> mode in your Python Bridge.</h3>
+<p><strong>Answer:</strong><br />
+"The bridge supports two configurable ingestion architectures:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature / Metric</th>
+<th style="text-align: left;"><code>SUPABASE_DIRECT</code> Mode</th>
+<th style="text-align: left;"><code>API_GATEWAY</code> Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Ingestion Target</strong></td>
+<td style="text-align: left;"><code>https://&lt;ref&gt;.supabase.co/rest/v1/telemetry</code></td>
+<td style="text-align: left;"><code>https://&lt;domain&gt;/api/telemetry</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Intermediary Hops</strong></td>
+<td style="text-align: left;">1 (Bridge $\to$ Cloud DB)</td>
+<td style="text-align: left;">2 (Bridge $\to$ Next.js Serverless $\to$ Cloud DB)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Average Ingestion Latency</strong></td>
+<td style="text-align: left;">$\approx 45\text{--}80\text{ ms}$</td>
+<td style="text-align: left;">$\approx 120\text{--}250\text{ ms}$</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Authentication</strong></td>
+<td style="text-align: left;">Supabase Service Role JWT</td>
+<td style="text-align: left;">Pre-shared Bearer API Key (<code>GATEWAY_API_KEY</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Use Case</strong></td>
+<td style="text-align: left;">High-throughput field operations &amp; minimal latency</td>
+<td style="text-align: left;">Enterprise setups requiring custom pre-processing or audit logging</td>
+</tr>
+</tbody>
+</table></div>
+<p>Both modes are implemented and verified in the codebase."</p>
+<hr />
+<h3 id="q5-why-did-you-use-websocket-change-data-capture-cdc-instead-of-http-polling-or-an-external-mqtt-broker">Q5: Why did you use WebSocket Change-Data-Capture (CDC) instead of HTTP Polling or an external MQTT Broker?</h3>
+<p><strong>Answer:</strong><br />
+"1. <strong>Elimination of Polling Overhead:</strong> HTTP polling (e.g., querying <code>/api/telemetry</code> every 2 seconds) wastes server bandwidth, floods the database with identical queries, and introduces artificial latency equal to the polling interval.
+2. <strong>Supabase Realtime vs MQTT:</strong> Supabase Realtime listens directly to PostgreSQL's native <strong>Write-Ahead Log (WAL)</strong> replication stream. When a row is committed, PostgreSQL pushes the change directly over a WebSocket connection to connected browsers.
+3. <strong>Single Technology Stack:</strong> Using PostgreSQL WAL replication eliminated the need to maintain, secure, and pay for an external MQTT broker (e.g., Mosquitto/HiveMQ) and separate bridge daemons."</p>
+<hr />
+<h3 id="q6-how-are-responsibilities-divided-between-edge-computing-and-cloud-computing-in-your-project">Q6: How are responsibilities divided between Edge Computing and Cloud Computing in your project?</h3>
+<p><strong>Answer:</strong><br />
+"We apply an <strong>Edge-Weighted Hybrid Model</strong>:
+* <strong>Edge MCU Responsibilities (ESP32):</strong>
+  * Hardware sensor acquisition and electrical filtering.
+  * Analog-to-digital conversion and JSON serialization.
+  * Sub-GHz RF modulation, hardware CRC calculation, and packet transmission.
+  * Physical signal quality measurement (RSSI / SNR calculation on gateway).
+* <strong>Cloud &amp; Serverless Responsibilities (Supabase &amp; Next.js):</strong>
+  * Long-term persistent storage and indexing of high-volume time-series data.
+  * Complex multi-sensor trigger evaluation and incident ticketing.
+  * Tactical GIS spatial rendering and dynamic boundary visualization.
+  * Operator session management, audit trails, and multi-format data export (CSV/JSON)."</p>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>

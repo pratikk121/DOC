@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration & Environment Variables Reference Guide | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>Configuration & Environment Variables Reference Guide</h1>
+      </div>
+
+      <article>
+<h2 id="1-overview-of-environment-configuration">1. Overview of Environment Configuration</h2>
+<p>The Wildfire Operations Center system utilizes environment variable isolation across two distinct application boundaries:
+1. <strong>Next.js Web Workstation:</strong> Configured via <code>.env.local</code> (local) or Vercel Environment Variables (cloud).
+2. <strong>Python Hardware Serial Bridge:</strong> Configured via <code>bridge/.env</code> on the host machine connected to the gateway.</p>
+<blockquote class="alert-warning"><p><strong>Warning:</strong> <strong>Secret Key Protection:</strong> Never commit <code>.env</code> or <code>.env.local</code> files to public version control repositories. Use <code>.env.example</code> templates and populate secrets only on deployment servers or local environments.</p>
+</blockquote>
+<hr />
+<h2 id="2-web-frontend-api-environment-variables-envlocal">2. Web Frontend &amp; API Environment Variables (<code>.env.local</code>)</h2>
+<h3 id="next_public_supabase_url"><code>NEXT_PUBLIC_SUPABASE_URL</code></h3>
+<ul>
+<li><strong>Purpose:</strong> The HTTPS REST and WebSocket URL for connecting to the Supabase backend project.</li>
+<li><strong>Required:</strong> Yes</li>
+<li><strong>Example:</strong> <code>https://xyzprojectid.supabase.co</code></li>
+<li><strong>Where Used:</strong> <code>lib/supabase/client.ts</code>, <code>lib/supabase/server.ts</code>, <code>lib/hooks/useRealtimeDashboard.ts</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>Public</strong> (Exposed to client-side browser bundle).</li>
+</ul>
+<hr />
+<h3 id="next_public_supabase_anon_key"><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></h3>
+<ul>
+<li><strong>Purpose:</strong> The public anonymous JWT token used by the browser client to subscribe to Realtime WebSocket channels and query permitted public tables under Row Level Security.</li>
+<li><strong>Required:</strong> Yes</li>
+<li><strong>Example:</strong> <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5...</code></li>
+<li><strong>Where Used:</strong> <code>lib/supabase/client.ts</code>, <code>lib/hooks/useRealtimeDashboard.ts</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>Public</strong> (Exposed to client-side browser bundle; restricted by PostgreSQL RLS policies).</li>
+</ul>
+<hr />
+<h3 id="supabase_service_role_key"><code>SUPABASE_SERVICE_ROLE_KEY</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Administrative PostgreSQL service role secret key. Bypasses Row Level Security (RLS) to perform server-side writes, database migrations, and administrative fleet updates.</li>
+<li><strong>Required:</strong> Yes</li>
+<li><strong>Example:</strong> <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5...</code> (Service Role JWT)</li>
+<li><strong>Where Used:</strong> <code>lib/supabase/server.ts</code>, <code>app/api/telemetry/route.ts</code>, <code>app/api/nodes/route.ts</code>, <code>app/api/alerts/route.ts</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>Strict Secret / Critical</strong> (Must never be prefixed with <code>NEXT_PUBLIC_</code> or leaked to client browser).</li>
+</ul>
+<hr />
+<h3 id="gateway_api_key"><code>GATEWAY_API_KEY</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Pre-shared bearer token used by the Python Bridge or external edge devices to authenticate requests sent to <code>/api/telemetry</code> when running under <code>API_GATEWAY</code> mode.</li>
+<li><strong>Required:</strong> Yes (if using API Gateway mode)</li>
+<li><strong>Example:</strong> <code>wfc_telemetry_secure_key_778899</code></li>
+<li><strong>Where Used:</strong> <code>app/api/telemetry/route.ts</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>Secret</strong> (Known only to server and field gateways).</li>
+</ul>
+<hr />
+<h2 id="3-python-serial-bridge-environment-variables-bridgeenv">3. Python Serial Bridge Environment Variables (<code>bridge/.env</code>)</h2>
+<h3 id="serial_port"><code>SERIAL_PORT</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Operating system COM port or device node where the ESP32 Gateway is connected.</li>
+<li><strong>Required:</strong> No (If omitted, <code>bridge.py</code> automatically scans available USB-UART devices).</li>
+<li><strong>Example:</strong> <code>COM4</code> (Windows) or <code>/dev/ttyUSB0</code> (Linux/Raspberry Pi).</li>
+<li><strong>Where Used:</strong> <code>bridge/bridge.py</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>None</strong> (Hardware path).</li>
+</ul>
+<hr />
+<h3 id="baud_rate"><code>BAUD_RATE</code></h3>
+<ul>
+<li><strong>Purpose:</strong> UART baud rate for serial communication with the ESP32 gateway.</li>
+<li><strong>Required:</strong> No (Default: <code>115200</code>).</li>
+<li><strong>Example:</strong> <code>115200</code></li>
+<li><strong>Where Used:</strong> <code>bridge/bridge.py</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>None</strong>.</li>
+</ul>
+<hr />
+<h3 id="ingestion_mode"><code>INGESTION_MODE</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Selects cloud ingestion pathway.</li>
+<li><code>SUPABASE_DIRECT</code>: Bridges serial directly to Supabase REST endpoint (<code>/rest/v1/telemetry</code>).</li>
+<li><code>API_GATEWAY</code>: Bridges serial to Next.js API route (<code>/api/telemetry</code>).</li>
+<li><strong>Required:</strong> No (Default: <code>SUPABASE_DIRECT</code>).</li>
+<li><strong>Example:</strong> <code>SUPABASE_DIRECT</code></li>
+<li><strong>Where Used:</strong> <code>bridge/bridge.py</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>None</strong>.</li>
+</ul>
+<hr />
+<h3 id="supabase_url"><code>SUPABASE_URL</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Target Supabase project endpoint for direct database insertion.</li>
+<li><strong>Required:</strong> Yes (When <code>INGESTION_MODE=SUPABASE_DIRECT</code>).</li>
+<li><strong>Example:</strong> <code>https://xyzprojectid.supabase.co</code></li>
+<li><strong>Where Used:</strong> <code>bridge/bridge.py</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>Public</strong>.</li>
+</ul>
+<hr />
+<h3 id="supabase_key"><code>SUPABASE_KEY</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Supabase service role secret key used by <code>bridge.py</code> to authenticate direct REST writes.</li>
+<li><strong>Required:</strong> Yes (When <code>INGESTION_MODE=SUPABASE_DIRECT</code>).</li>
+<li><strong>Example:</strong> <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code></li>
+<li><strong>Where Used:</strong> <code>bridge/bridge.py</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>Strict Secret / Critical</strong>.</li>
+</ul>
+<hr />
+<h3 id="log_level"><code>LOG_LEVEL</code></h3>
+<ul>
+<li><strong>Purpose:</strong> Controls verbosity of console output (<code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>).</li>
+<li><strong>Required:</strong> No (Default: <code>INFO</code>).</li>
+<li><strong>Example:</strong> <code>INFO</code></li>
+<li><strong>Where Used:</strong> <code>bridge/bridge.py</code></li>
+<li><strong>Security Sensitivity:</strong> <strong>None</strong>.</li>
+</ul>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>

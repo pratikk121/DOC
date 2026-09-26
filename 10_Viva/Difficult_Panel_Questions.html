@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Difficult Panel Questions & Cross-Examination Defense | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>Difficult Panel Questions & Cross-Examination Defense</h1>
+      </div>
+
+      <article>
+<blockquote>
+<p><strong>Target Audience:</strong> Tough Review Panels, External Examiners &amp; Industry Judges<br />
+<strong>Key Strategy:</strong> Never guess or bluster. Ground every answer in RF physics, software architecture, and actual codebase evidence.</p>
+</blockquote>
+<hr />
+<h2 id="1-high-difficulty-technical-cross-examinations">1. High-Difficulty Technical Cross-Examinations</h2>
+<h3 id="q1-can-433-mhz-radio-waves-really-penetrate-heavy-wet-forest-woods-what-is-the-physics">Q1: Can 433 MHz radio waves really penetrate heavy, wet forest woods? What is the physics?</h3>
+<p><strong>Answer:</strong><br />
+"Yes. RF propagation through dense vegetation is governed by the <strong>dielectric permittivity of water</strong> and <strong>electromagnetic skin depth</strong>:
+1. High-frequency waves like $2.4\text{ GHz}$ (Wi-Fi/Zigbee) have a short wavelength ($\lambda \approx 12.5\text{ cm}$). When foliage is wet, the water layer on leaves approaches a significant fraction of the wavelength, causing severe Rayleigh scattering and dielectric absorption ($\approx 2\text{--}4\text{ dB/m}$ loss).
+2. $433\text{ MHz}$ waves have a much larger wavelength ($\lambda \approx 69.3\text{ cm}$). Because $\lambda$ is much larger than typical leaves and tree needles, the wave treats the canopy as a diffuse medium rather than an opaque shield, diffracting around tree trunks with significantly lower attenuation ($\approx 0.3\text{--}0.6\text{ dB/m}$).
+Combined with LoRa's Chirp Spread Spectrum (CSS) coding gain and a link budget exceeding $140\text{ dB}$, 433 MHz easily penetrates heavy timber stands where 2.4 GHz completely fails."</p>
+<hr />
+<h3 id="q2-what-happens-if-you-power-on-an-sx1278-lora-module-without-an-antenna">Q2: What happens if you power on an SX1278 LoRa module without an antenna?</h3>
+<p><strong>Answer:</strong><br />
+"Powering on the SX1278 transceiver in transmit mode without an antenna is hazardous to the module:
+* The RF output pin is designed for a <strong>$50\,\Omega$ matched characteristic impedance</strong>.
+* Operating without an antenna presents an open circuit, causing a <strong>Voltage Standing Wave Ratio (VSWR)</strong> approaching infinity.
+* Nearly $100\%$ of the $+20\text{ dBm}$ ($100\text{ mW}$) forward RF power reflects back into the internal Power Amplifier (PA) transistor as heat, which can permanently damage or destroy the output stage of the Semtech silicon chip.
+* For our 433 MHz system, an exact quarter-wave monopole antenna ($\lambda / 4 = \frac{3 \times 10^8}{433 \times 10^6 \times 4} \approx 17.3\text{ cm}$) must always be connected."</p>
+<hr />
+<h3 id="q3-what-happens-if-a-jumper-wire-accidentally-shorts-the-center-pin-and-the-outer-ground-shield-on-the-lora-sma-connector">Q3: What happens if a jumper wire accidentally shorts the center pin and the outer ground shield on the LoRa SMA connector?</h3>
+<p><strong>Answer:</strong><br />
+"The center pin carries the high-frequency RF signal while the outer shield is connected to the PCB ground plane:
+* Shorting them creates a direct <strong>RF short-circuit to ground</strong>.
+* The transmitter output sees an impedance of $0\,\Omega$ instead of $50\,\Omega$, creating total signal reflection and zero electromagnetic radiation into the air.
+* The receiver will receive 0 packets, and prolonged continuous transmission into a direct short can overheat the module's RF front-end circuitry."</p>
+<hr />
+<h3 id="q4-what-happens-if-two-sensor-nodes-transmit-at-the-exact-same-millisecond-on-4330-mhz">Q4: What happens if two sensor nodes transmit at the exact same millisecond on 433.0 MHz?</h3>
+<p><strong>Answer:</strong><br />
+"In our current unslotted ALOHA setup:
+1. <strong>LoRa Capture Effect:</strong> If one node's signal is at least $\approx 6\text{ dB}$ stronger (higher RSSI) than the other at the gateway antenna, the SX1278 receiver will successfully lock onto and demodulate the stronger packet while treating the weaker one as background noise.
+2. <strong>Packet Collision:</strong> If both signals arrive with near-identical power, destructive interference occurs, causing a CRC failure, and the gateway discards both packets.
+* <strong>Mitigation:</strong> In future production firmware, we plan to implement <strong>Carrier Activity Detection (CAD)</strong> before transmission and randomized jitter ($\pm 200\text{ ms}$) in the transmission timer."</p>
+<hr />
+<h3 id="q5-what-happens-if-the-internet-connection-between-the-python-bridge-and-the-cloud-drops">Q5: What happens if the internet connection between the Python Bridge and the cloud drops?</h3>
+<p><strong>Answer:</strong><br />
+"1. In <code>bridge.py</code>, the HTTP POST call raises a <code>requests.exceptions.ConnectionError</code>.
+2. The bridge traps this exception, enters an exponential backoff retry loop ($1\text{s}, 2\text{s}, 4\text{s}\dots$), and retains the current packet in memory.
+3. The gateway continues receiving LoRa packets over RF and buffering them in the ESP32 UART FIFO.
+4. Once internet connectivity is restored, the bridge reconnects and flushes the backlog to Supabase without requiring a manual restart."</p>
+<hr />
+<h3 id="q6-why-did-you-calibrate-the-flame-detection-threshold-to-100text-adc-and-smoke-to-2000text-adc">Q6: Why did you calibrate the flame detection threshold to $&lt; 100\text{ ADC}$ and smoke to $&gt; 2000\text{ ADC}$?</h3>
+<p><strong>Answer:</strong><br />
+"Through physical experimentation:
+* <strong>Optical Flame IR Sensor:</strong> In standard indoor and outdoor ambient light, the 12-bit ADC value hovers steadily between $3800$ and $4095\text{ ADC}$ ($3.1\text{--}3.3\text{V}$). When exposed to direct flame radiation (e.g. butane flame at $1\text{--}2\text{ meters}$), the photodiode resistance collapses, driving the ADC reading below $100\text{ ADC}$ ($&lt; 0.08\text{V}$). A threshold of $&lt; 100$ provides high immunity to ambient sunlight while catching real flame radiation.
+* <strong>MQ-2 Smoke Sensor:</strong> Clean forest air yields a baseline between $1400$ and $1700\text{ ADC}$. Combustion smoke elevates the analog voltage significantly, exceeding $2000\text{ ADC}$ within 3 seconds of smoke contact. A threshold of $&gt; 2000$ eliminates ambient noise while triggering reliably on genuine combustion particulates."</p>
+<hr />
+<h2 id="2-thirty-second-elevator-pitches">2. Thirty-Second Elevator Pitches</h2>
+<h3 id="q7-explain-your-project-in-30-seconds-to-a-non-technical-government-forestry-official">Q7: Explain your project in 30 seconds to a non-technical government forestry official.</h3>
+<p><strong>Answer:</strong><br />
+<em>"We have built an early wildfire detection and command platform that spots forest fires at the ground level long before satellites can see them. We place small, rugged sensor boxes under the forest trees that detect smoke, heat, and flame. Because deep forests have no mobile phone network, our sensors talk over long-range radio to a base station, which instantly alerts emergency dispatchers on a live tactical map, sounding an alarm and giving exact GPS coordinates so firefighters can extinguish the blaze before it spreads."</em></p>
+<hr />
+<h3 id="q8-explain-your-project-in-30-seconds-to-a-senior-embedded-systems-iot-architect">Q8: Explain your project in 30 seconds to a senior embedded systems / IoT architect.</h3>
+<p><strong>Answer:</strong><br />
+<em>"We engineered an Edge-to-Cloud telemetry platform featuring ESP32 edge nodes polling DHT22, MQ-2, and IR flame sensors, broadcasting serialized JSON over 433 MHz LoRa using Semtech SX1278 transceivers. A Python bridge ingests gateway UART frames with physical boundary validation and commits to a Supabase PostgreSQL 15 database. Database triggers atomically evaluate fire states and debounce incidents, streaming real-time updates via PostgreSQL WAL logical decoding over WebSockets to a Next.js 15 / React 19 tactical EOC workstation with sub-2-second end-to-end latency."</em></p>
+<hr />
+<h2 id="3-real-engineering-challenges-debugging-defense">3. Real Engineering Challenges &amp; Debugging Defense</h2>
+<h3 id="q9-what-was-the-most-challenging-bug-you-encountered-and-how-did-you-resolve-it">Q9: What was the most challenging bug you encountered and how did you resolve it?</h3>
+<p><strong>Answer:</strong><br />
+"The most nuanced issue occurred during initial cloud ingestion testing:
+* <strong>The Problem:</strong> When testing high-frequency packet transmission, the database began rejecting packets with <code>409 Conflict (duplicate key value violates unique constraint 'uq_node_sequence')</code>.
+* <strong>Root Cause:</strong> The edge node was retransmitting sequence numbers when looping quickly, while the database enforced strict sequence uniqueness per node.
+* <strong>Resolution:</strong> We updated <code>bridge.py</code> to recognize <code>HTTP 409 Conflict</code> as a graceful acknowledgement of a duplicate packet rather than a critical network failure, and adjusted the edge firmware transmission loop with non-blocking <code>millis()</code> timing to ensure every packet increments its sequence counter monotonically."</p>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Documentation: PostgreSQL Architecture & Stored Logic | Wildfire EOC Handover Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#0284c7',
+        lineColor: '#2563eb',
+        secondaryColor: '#f1f5f9',
+        tertiaryColor: '#f8fafc',
+        mainBkg: '#ffffff',
+        nodeBorder: '#0284c7',
+        fontFamily: 'Plus Jakarta Sans, sans-serif'
+      },
+      securityLevel: 'loose'
+    });
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --primary-blue: #2563eb;
+      --primary-sky: #0284c7;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-crimson: #dc2626;
+      --accent-indigo: #4f46e5;
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 30%),
+        radial-gradient(circle at 90% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 30%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Scroll progress bar */
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s ease;
+    }
+
+    /* Light Frosted Sticky Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-inner {
+      max-width: 1060px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-heading);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: var(--primary-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-pdf {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #1d4ed8;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-pdf:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 48px 56px;
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 24px -4px rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colored Top Accent Bar */
+    .doc-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #0284c7, #059669, #f59e0b);
+    }
+
+    .doc-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid var(--primary-blue);
+      color: #0f172a;
+    }
+
+    h3 {
+      font-size: 16px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      color: #1e293b;
+      font-weight: 700;
+    }
+
+    p {
+      margin-bottom: 16px;
+      color: #334155;
+    }
+
+    strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+      background: #ffffff;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-color);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: #334155;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #fafbfc;
+    }
+
+    tr:hover td {
+      background-color: #f0f9ff;
+    }
+
+    /* Code Blocks */
+    .code-container {
+      margin: 22px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+      background: var(--code-bg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-header {
+      background: #1e293b;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .code-lang {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      font-family: 'Fira Code', monospace;
+    }
+
+    pre {
+      background: transparent;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      background: #f1f5f9;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      font-weight: 500;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Mermaid Diagrams Card */
+    .mermaid-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 16px;
+      margin: 24px 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Vibrant Alert Boxes */
+    blockquote {
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .alert-note {
+      border-left: 4px solid var(--primary-sky);
+      background: #f0f9ff;
+      color: #0c4a6e;
+    }
+
+    .alert-warning {
+      border-left: 4px solid var(--accent-amber);
+      background: #fffbeb;
+      color: #78350f;
+    }
+
+    .alert-caution {
+      border-left: 4px solid var(--accent-crimson);
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    /* Links */
+    a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: var(--border-color);
+      margin: 32px 0;
+    }
+
+    .doc-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print Optimization for PDF Saving */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+        padding: 0;
+      }
+
+      #progress-bar, .site-nav, .btn-nav, .btn-pdf {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .doc-card {
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .doc-card::before {
+        display: none !important;
+      }
+
+      h1, h2, h3, h4 {
+        color: #000000 !important;
+        page-break-after: avoid;
+      }
+
+      h1 {
+        border-bottom: 2pt solid #000000 !important;
+        font-size: 18pt;
+        padding-bottom: 6pt;
+      }
+
+      h2 {
+        border-left: none !important;
+        padding-left: 0 !important;
+        border-bottom: 1pt solid #cccccc !important;
+        font-size: 13pt;
+        margin-top: 18pt;
+      }
+
+      p, li, td {
+        color: #111111 !important;
+      }
+
+      .table-wrapper {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      table {
+        font-size: 9pt;
+      }
+
+      th {
+        background-color: #f1f5f9 !important;
+        color: #000000 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      td {
+        background: #ffffff !important;
+        border-bottom: 1pt solid #e2e8f0 !important;
+      }
+
+      .code-container {
+        border: 1pt solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      .code-header {
+        background: #f1f5f9 !important;
+        border-bottom: 1pt solid #cbd5e1 !important;
+      }
+
+      pre {
+        color: #0f172a !important;
+        font-size: 8pt;
+      }
+
+      code {
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1pt solid #cbd5e1 !important;
+      }
+
+      .mermaid-card {
+        border: 1pt solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+      }
+
+      blockquote {
+        border-left: 3pt solid #334155 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-brand">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="brand-title">Wildfire EOC Telemetry Platform</div>
+          <div class="brand-sub">Project Handover & Viva Suite</div>
+        </div>
+      </a>
+      <div class="nav-controls">
+        <a href="../index.html" class="btn-nav">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Master Index
+        </a>
+        <button class="btn-nav btn-pdf" onclick="window.print()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="doc-card">
+      <div class="doc-header">
+        <div class="doc-badge">Technical Documentation</div>
+        <h1>Database Documentation: PostgreSQL Architecture & Stored Logic</h1>
+      </div>
+
+      <article>
+<h2 id="1-overview-database-technology">1. Overview &amp; Database Technology</h2>
+<p>The Wildfire Operations Center data persistence tier is hosted on <strong>Supabase (PostgreSQL 15)</strong>. The database acts not merely as a passive storage repository, but as an <strong>active autonomic event processor</strong>, utilizing PL/pgSQL stored procedures, triggers, composite constraints, and Write-Ahead Log (WAL) real-time streaming.</p>
+<hr />
+<h2 id="2-entity-relationship-diagram-erd">2. Entity-Relationship Diagram (ERD)</h2>
+<div class="mermaid-card"><pre class="mermaid">
+erDiagram
+    gateways ||--o{ sensor_nodes : "monitors (1:N)"
+    gateways ||--o{ telemetry : "forwards (1:N)"
+    sensor_nodes ||--o{ telemetry : "records (1:N)"
+    sensor_nodes ||--o{ incidents : "generates (1:N)"
+
+    gateways {
+        varchar(64) gateway_id PK "Unique Hardware ID (e.g. GW-DEMO-01)"
+        varchar(128) name "Human readable label"
+        decimal latitude "Latitude WGS84"
+        decimal longitude "Longitude WGS84"
+        varchar(20) status "ACTIVE | DEGRADED | OFFLINE"
+        timestamptz last_seen_at "Last received packet time"
+        timestamptz created_at "Registration timestamp"
+    }
+
+    sensor_nodes {
+        varchar(64) node_id PK "Unique Edge Node ID (e.g. NODE-DEMO-01)"
+        varchar(64) gateway_id FK "Assigned Gateway ID"
+        varchar(128) name "Forest Sector / Node Name"
+        decimal latitude "Latitude WGS84"
+        decimal longitude "Longitude WGS84"
+        varchar(20) status "ONLINE | ALERT | WARNING | OFFLINE"
+        float battery_level "Battery percentage (0.0 - 100.0)"
+        timestamptz last_telemetry_at "Last valid reading timestamp"
+        timestamptz created_at "Registration timestamp"
+    }
+
+    telemetry {
+        bigserial id PK "Surrogate autoincrement ID"
+        varchar(64) node_id FK "Originating Node ID"
+        varchar(64) gateway_id FK "Ingesting Gateway ID"
+        bigint sequence_number "Packet Sequence Counter"
+        float temperature_c "Ambient Temperature (-50 to 100 °C)"
+        float humidity_pct "Relative Humidity (0 to 100 %)"
+        int smoke_raw "MQ-2 12-bit ADC (0 to 4095)"
+        int flame_raw "Flame Photodiode 12-bit ADC (0 to 4095)"
+        boolean alert_triggered "Hardware/Threshold alert boolean"
+        int rssi_dbm "RF Received Signal Strength (-150 to 0 dBm)"
+        float snr_db "RF Signal to Noise Ratio (-30 to 30 dB)"
+        timestamptz created_at "Ingestion timestamp"
+    }
+
+    incidents {
+        bigserial id PK "Incident Ticket ID"
+        varchar(64) node_id FK "Affected Node ID"
+        varchar(32) alert_type "WILDFIRE_FLAME | HIGH_SMOKE | CRITICAL_HEAT"
+        varchar(20) severity "CRITICAL | WARNING | INFO"
+        varchar(20) status "ACTIVE | ACKNOWLEDGED | RESOLVED"
+        jsonb metadata "Snapshot of sensor values at trigger"
+        timestamptz triggered_at "Incident trigger timestamp"
+        timestamptz acknowledged_at "Operator acknowledgment time"
+        timestamptz resolved_at "Resolution timestamp"
+    }
+</pre></div>
+
+<hr />
+<h2 id="3-detailed-table-schema-definitions">3. Detailed Table Schema Definitions</h2>
+<h3 id="31-table-gateways">3.1 Table: <code>gateways</code></h3>
+<p>Stores registered base station gateway hardware profiles and operational health.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Column Name</th>
+<th style="text-align: left;">Data Type</th>
+<th style="text-align: left;">Constraints</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>gateway_id</code></td>
+<td style="text-align: left;"><code>VARCHAR(64)</code></td>
+<td style="text-align: left;"><code>PRIMARY KEY</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Unique hardware gateway identifier.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>name</code></td>
+<td style="text-align: left;"><code>VARCHAR(128)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Operator-friendly base station label.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>latitude</code></td>
+<td style="text-align: left;"><code>DECIMAL(10, 7)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Physical GPS latitude in decimal degrees.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>longitude</code></td>
+<td style="text-align: left;"><code>DECIMAL(10, 7)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Physical GPS longitude in decimal degrees.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>status</code></td>
+<td style="text-align: left;"><code>VARCHAR(20)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>'ACTIVE'</code></td>
+<td style="text-align: left;">Current gateway status (<code>ACTIVE</code>, <code>OFFLINE</code>).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>last_seen_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NULL</code></td>
+<td style="text-align: left;"><code>NOW()</code></td>
+<td style="text-align: left;">Timestamp of last received serial packet.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>created_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>NOW()</code></td>
+<td style="text-align: left;">Database record creation timestamp.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="32-table-sensor_nodes">3.2 Table: <code>sensor_nodes</code></h3>
+<p>Stores deployed field sensor node configurations, locations, and real-time state.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Column Name</th>
+<th style="text-align: left;">Data Type</th>
+<th style="text-align: left;">Constraints</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>node_id</code></td>
+<td style="text-align: left;"><code>VARCHAR(64)</code></td>
+<td style="text-align: left;"><code>PRIMARY KEY</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Unique edge sensor identifier.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>gateway_id</code></td>
+<td style="text-align: left;"><code>VARCHAR(64)</code></td>
+<td style="text-align: left;"><code>REFERENCES gateways(gateway_id)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Parent gateway node reporting this sensor.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>name</code></td>
+<td style="text-align: left;"><code>VARCHAR(128)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Sector or physical location identifier.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>latitude</code></td>
+<td style="text-align: left;"><code>DECIMAL(10, 7)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Fixed GPS latitude in decimal degrees.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>longitude</code></td>
+<td style="text-align: left;"><code>DECIMAL(10, 7)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Fixed GPS longitude in decimal degrees.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>status</code></td>
+<td style="text-align: left;"><code>VARCHAR(20)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>'ONLINE'</code></td>
+<td style="text-align: left;">Status (<code>ONLINE</code>, <code>ALERT</code>, <code>WARNING</code>, <code>OFFLINE</code>).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>battery_level</code></td>
+<td style="text-align: left;"><code>REAL</code></td>
+<td style="text-align: left;"><code>CHECK (battery_level BETWEEN 0 AND 100)</code></td>
+<td style="text-align: left;"><code>100.0</code></td>
+<td style="text-align: left;">Remaining battery state of charge.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>last_telemetry_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NULL</code></td>
+<td style="text-align: left;"><code>NOW()</code></td>
+<td style="text-align: left;">Timestamp of most recent telemetry insert.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>created_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>NOW()</code></td>
+<td style="text-align: left;">Database record creation timestamp.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="33-table-telemetry">3.3 Table: <code>telemetry</code></h3>
+<p>High-volume append-only time-series table storing every environmental observation.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Column Name</th>
+<th style="text-align: left;">Data Type</th>
+<th style="text-align: left;">Constraints</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>id</code></td>
+<td style="text-align: left;"><code>BIGSERIAL</code></td>
+<td style="text-align: left;"><code>PRIMARY KEY</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Auto-incrementing surrogate row identifier.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>node_id</code></td>
+<td style="text-align: left;"><code>VARCHAR(64)</code></td>
+<td style="text-align: left;"><code>REFERENCES sensor_nodes(node_id)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Originating edge sensor node ID.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>gateway_id</code></td>
+<td style="text-align: left;"><code>VARCHAR(64)</code></td>
+<td style="text-align: left;"><code>REFERENCES gateways(gateway_id)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Receiving base station gateway ID.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>sequence_number</code></td>
+<td style="text-align: left;"><code>BIGINT</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Edge firmware packet sequence counter.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>temperature_c</code></td>
+<td style="text-align: left;"><code>REAL</code></td>
+<td style="text-align: left;"><code>CHECK (temperature_c BETWEEN -50 AND 100)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Ambient temperature in degrees Celsius.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>humidity_pct</code></td>
+<td style="text-align: left;"><code>REAL</code></td>
+<td style="text-align: left;"><code>CHECK (humidity_pct BETWEEN 0 AND 100)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Relative humidity percentage ($0\text{--}100\%$).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>smoke_raw</code></td>
+<td style="text-align: left;"><code>INTEGER</code></td>
+<td style="text-align: left;"><code>CHECK (smoke_raw BETWEEN 0 AND 4095)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">12-bit ADC gas/smoke concentration.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>flame_raw</code></td>
+<td style="text-align: left;"><code>INTEGER</code></td>
+<td style="text-align: left;"><code>CHECK (flame_raw BETWEEN 0 AND 4095)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">12-bit ADC infrared radiation reading.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>alert_triggered</code></td>
+<td style="text-align: left;"><code>BOOLEAN</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>FALSE</code></td>
+<td style="text-align: left;">Alert flag calculated at edge/bridge.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rssi_dbm</code></td>
+<td style="text-align: left;"><code>INTEGER</code></td>
+<td style="text-align: left;"><code>CHECK (rssi_dbm BETWEEN -150 AND 0)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Received Signal Strength in dBm.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>snr_db</code></td>
+<td style="text-align: left;"><code>REAL</code></td>
+<td style="text-align: left;"><code>CHECK (snr_db BETWEEN -30 AND 30)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Signal-to-Noise Ratio in dB.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>created_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>NOW()</code></td>
+<td style="text-align: left;">Ingestion timestamp.</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Unique Duplicate Deduplication Constraint:</strong>
+  <code>sql
+  CONSTRAINT uq_node_sequence UNIQUE (node_id, sequence_number)</code>
+  <em>(Prevents RF packet retransmission storms from creating duplicate records; causes HTTP 409 Conflict handled cleanly by <code>bridge.py</code>).</em></li>
+</ul>
+<hr />
+<h3 id="34-table-incidents">3.4 Table: <code>incidents</code></h3>
+<p>Wildfire emergency ticketing and lifecycle tracking table.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Column Name</th>
+<th style="text-align: left;">Data Type</th>
+<th style="text-align: left;">Constraints</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>id</code></td>
+<td style="text-align: left;"><code>BIGSERIAL</code></td>
+<td style="text-align: left;"><code>PRIMARY KEY</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Unique incident ticket number.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>node_id</code></td>
+<td style="text-align: left;"><code>VARCHAR(64)</code></td>
+<td style="text-align: left;"><code>REFERENCES sensor_nodes(node_id)</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Triggering node identifier.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>alert_type</code></td>
+<td style="text-align: left;"><code>VARCHAR(32)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;"><code>WILDFIRE_FLAME</code>, <code>HIGH_SMOKE</code>, <code>CRITICAL_HEAT</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>severity</code></td>
+<td style="text-align: left;"><code>VARCHAR(20)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>'CRITICAL'</code></td>
+<td style="text-align: left;"><code>CRITICAL</code>, <code>WARNING</code>, <code>INFO</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>status</code></td>
+<td style="text-align: left;"><code>VARCHAR(20)</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>'ACTIVE'</code></td>
+<td style="text-align: left;"><code>ACTIVE</code>, <code>ACKNOWLEDGED</code>, <code>RESOLVED</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>metadata</code></td>
+<td style="text-align: left;"><code>JSONB</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>'{}'</code></td>
+<td style="text-align: left;">Snapshot of sensor values at trigger instant.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>triggered_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NOT NULL</code></td>
+<td style="text-align: left;"><code>NOW()</code></td>
+<td style="text-align: left;">Exact incident initiation timestamp.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>acknowledged_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Timestamp of operator acknowledgment.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resolved_at</code></td>
+<td style="text-align: left;"><code>TIMESTAMPTZ</code></td>
+<td style="text-align: left;"><code>NULL</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Timestamp when incident was marked resolved.</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="4-stored-procedures-triggers-plpgsql">4. Stored Procedures &amp; Triggers (<code>PL/pgSQL</code>)</h2>
+<h3 id="41-gateway-verification-trigger-fn_verify_telemetry_gateway">4.1 Gateway Verification Trigger (<code>fn_verify_telemetry_gateway</code>)</h3>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">SQL</div>
+  </div>
+  <pre><code class="language-sql">CREATE OR REPLACE FUNCTION fn_verify_telemetry_gateway()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Update gateway last_seen timestamp
+    UPDATE gateways
+    SET last_seen_at = NOW(), status = 'ACTIVE'
+    WHERE gateway_id = NEW.gateway_id;
+
+    -- Update sensor node last_telemetry_at
+    UPDATE sensor_nodes
+    SET last_telemetry_at = NOW()
+    WHERE node_id = NEW.node_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_verify_telemetry_gateway
+BEFORE INSERT ON telemetry
+FOR EACH ROW
+EXECUTE FUNCTION fn_verify_telemetry_gateway();
+</code></pre>
+</div>
+<hr />
+<h3 id="42-autonomic-incident-evaluation-trigger-fn_evaluate_telemetry_alert">4.2 Autonomic Incident Evaluation Trigger (<code>fn_evaluate_telemetry_alert</code>)</h3>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">SQL</div>
+  </div>
+  <pre><code class="language-sql">CREATE OR REPLACE FUNCTION fn_evaluate_telemetry_alert()
+RETURNS TRIGGER AS $$
+DECLARE
+    is_fire_detected BOOLEAN := FALSE;
+    existing_incident_id BIGINT;
+BEGIN
+    -- Check physical wildfire condition: Flame IR drops below 100 OR Smoke exceeds 2000 ADC
+    IF NEW.flame_raw &lt; 100 OR NEW.smoke_raw &gt; 2000 OR NEW.temperature_c &gt; 55.0 THEN
+        is_fire_detected := TRUE;
+    END IF;
+
+    IF is_fire_detected THEN
+        -- 1. Transition Node Status to ALERT
+        UPDATE sensor_nodes
+        SET status = 'ALERT'
+        WHERE node_id = NEW.node_id;
+
+        -- 2. Check for an already active incident for this node
+        SELECT id INTO existing_incident_id
+        FROM incidents
+        WHERE node_id = NEW.node_id AND status = 'ACTIVE'
+        LIMIT 1;
+
+        -- 3. If no active incident exists, create one with JSONB metadata
+        IF existing_incident_id IS NULL THEN
+            INSERT INTO incidents (node_id, alert_type, severity, status, metadata, triggered_at)
+            VALUES (
+                NEW.node_id,
+                CASE
+                    WHEN NEW.flame_raw &lt; 100 THEN 'WILDFIRE_FLAME'
+                    WHEN NEW.smoke_raw &gt; 2000 THEN 'HIGH_SMOKE'
+                    ELSE 'CRITICAL_HEAT'
+                END,
+                'CRITICAL',
+                'ACTIVE',
+                jsonb_build_object(
+                    'temperature_c', NEW.temperature_c,
+                    'humidity_pct', NEW.humidity_pct,
+                    'smoke_raw', NEW.smoke_raw,
+                    'flame_raw', NEW.flame_raw,
+                    'rssi_dbm', NEW.rssi_dbm,
+                    'sequence_number', NEW.sequence_number
+                ),
+                NOW()
+            );
+        END IF;
+    ELSE
+        -- Return node to ONLINE status if readings have normalized
+        IF NEW.temperature_c &lt; 45.0 AND NEW.smoke_raw &lt; 1500 AND NEW.flame_raw &gt; 1000 THEN
+            UPDATE sensor_nodes
+            SET status = 'ONLINE'
+            WHERE node_id = NEW.node_id AND status != 'OFFLINE';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_evaluate_telemetry
+AFTER INSERT ON telemetry
+FOR EACH ROW
+EXECUTE FUNCTION fn_evaluate_telemetry_alert();
+</code></pre>
+</div>
+<hr />
+<h2 id="5-performance-indexes-optimizations">5. Performance Indexes &amp; Optimizations</h2>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">SQL</div>
+  </div>
+  <pre><code class="language-sql">-- Fast historical chart queries filtered by node and time
+CREATE INDEX idx_telemetry_node_created ON telemetry (node_id, created_at DESC);
+
+-- Fast duplicate sequence lookup
+CREATE INDEX idx_telemetry_node_seq ON telemetry (node_id, sequence_number);
+
+-- Fast active incident lookups for dashboard rail
+CREATE INDEX idx_incidents_status ON incidents (status, triggered_at DESC);
+</code></pre>
+</div>
+      </article>
+
+      <footer class="doc-footer">
+        <div>Wildfire Operations Center (EOC) Telemetry Platform</div>
+        <div>Technical Documentation</div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    window.onscroll = function() {
+      let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      let scrolled = (winScroll / height) * 100;
+      document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+  </script>
+</body>
+</html>
