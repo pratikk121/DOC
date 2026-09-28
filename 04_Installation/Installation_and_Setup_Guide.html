@@ -686,7 +686,42 @@
 </tbody>
 </table></div>
 <hr />
-<h3 id="22-edge-sensor-node-wiring-table-firmwaresensor_nodesensor_nodeino">2.2 Edge Sensor Node Wiring Table (<code>firmware/sensor_node/sensor_node.ino</code>)</h3>
+<h3 id="22-edge-sensor-node-hardware-wiring-blueprint-firmwaresensor_nodesensor_nodeino">2.2 Edge Sensor Node Hardware Wiring Blueprint (<code>firmware/sensor_node/sensor_node.ino</code>)</h3>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">CODE</div>
+  </div>
+  <pre><code>                      +================================================+
+                      |         ESP32 DEVKIT V1 (30-PIN MCU)           |
+                      |                                                |
+[ 5V POWER BANK ] ===&gt;| [VIN (5V)] ───────┬────────────────────────────|───► [MQ-2 VCC (Heater 5V)]
+                      | [3.3V OUT] ──┬────┼────────────────────────────|───► [DHT22 VCC (3.3V)]
+                      |              │    │                            |───► [Flame IR VCC (3.3V)]
+                      |              │    │                            |───► [SX1278 LoRa VCC (3.3V ONLY!)]
+                      |              │    │                            |
+                      | [GND] ───────┴────┴─── [COMMON GROUND BUS] ────|───► [All Sensor &amp; LoRa GNDs]
+                      |                                                |
+                      | [GPIO 27] &lt;── (Digital Single-Wire) ──────────|──── [DHT22 DATA]
+                      | [GPIO 34] &lt;── (Analog ADC1_CH6) ───────────────|──── [MQ-2 Analog A0]
+                      | [GPIO 35] &lt;── (Analog ADC1_CH7) ───────────────|──── [Flame Photodiode A0]
+                      |                                                |
+                      | [GPIO  5] ─── (SPI NSS / Chip Select) ─────────|───► [SX1278 NSS]
+                      | [GPIO 14] ─── (Reset) ─────────────────────────|───► [SX1278 RST]
+                      | [GPIO 26] &lt;── (DIO0 / IRQ Interrupt) ──────────|──── [SX1278 DIO0]
+                      | [GPIO 18] ─── (VSPI SCK Clock) ────────────────|───► [SX1278 SCK]
+                      | [GPIO 19] &lt;── (VSPI MISO Master In) ───────────|──── [SX1278 MISO]
+                      | [GPIO 23] ─── (VSPI MOSI Master Out) ──────────|───► [SX1278 MOSI]
+                      |                                                |
+                      | [ANT PIN] ─────────────────────────────────────|───► [17.3cm 433MHz Antenna]
+                      +================================================+
+</code></pre>
+</div>
+<h3 id="23-edge-node-pin-interconnect-reference-table">2.3 Edge Node Pin Interconnect Reference Table</h3>
 <div class="code-container">
   <div class="code-header">
     <div class="code-dots">

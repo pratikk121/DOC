@@ -27,7 +27,35 @@ Ensure your development workstation has the following software installed before 
 
 ---
 
-### 2.2 Edge Sensor Node Wiring Table (`firmware/sensor_node/sensor_node.ino`)
+### 2.2 Edge Sensor Node Hardware Wiring Blueprint (`firmware/sensor_node/sensor_node.ino`)
+
+```
+                      +================================================+
+                      |         ESP32 DEVKIT V1 (30-PIN MCU)           |
+                      |                                                |
+[ 5V POWER BANK ] ===>| [VIN (5V)] ───────┬────────────────────────────|───► [MQ-2 VCC (Heater 5V)]
+                      | [3.3V OUT] ──┬────┼────────────────────────────|───► [DHT22 VCC (3.3V)]
+                      |              │    │                            |───► [Flame IR VCC (3.3V)]
+                      |              │    │                            |───► [SX1278 LoRa VCC (3.3V ONLY!)]
+                      |              │    │                            |
+                      | [GND] ───────┴────┴─── [COMMON GROUND BUS] ────|───► [All Sensor & LoRa GNDs]
+                      |                                                |
+                      | [GPIO 27] <── (Digital Single-Wire) ──────────|──── [DHT22 DATA]
+                      | [GPIO 34] <── (Analog ADC1_CH6) ───────────────|──── [MQ-2 Analog A0]
+                      | [GPIO 35] <── (Analog ADC1_CH7) ───────────────|──── [Flame Photodiode A0]
+                      |                                                |
+                      | [GPIO  5] ─── (SPI NSS / Chip Select) ─────────|───► [SX1278 NSS]
+                      | [GPIO 14] ─── (Reset) ─────────────────────────|───► [SX1278 RST]
+                      | [GPIO 26] <── (DIO0 / IRQ Interrupt) ──────────|──── [SX1278 DIO0]
+                      | [GPIO 18] ─── (VSPI SCK Clock) ────────────────|───► [SX1278 SCK]
+                      | [GPIO 19] <── (VSPI MISO Master In) ───────────|──── [SX1278 MISO]
+                      | [GPIO 23] ─── (VSPI MOSI Master Out) ──────────|───► [SX1278 MOSI]
+                      |                                                |
+                      | [ANT PIN] ─────────────────────────────────────|───► [17.3cm 433MHz Antenna]
+                      +================================================+
+```
+
+### 2.3 Edge Node Pin Interconnect Reference Table
 
 ```
 +-------------------+--------------------+------------------------+

@@ -663,28 +663,8 @@ graph TD
 
 <hr />
 <h2 id="2-hardware-embedded-firmware-architecture">2. Hardware &amp; Embedded Firmware Architecture</h2>
-<h3 id="21-sensor-node-hardware-specifications-pinout-firmwaresensor_nodesensor_nodeino">2.1 Sensor Node Hardware Specifications &amp; Pinout (<code>firmware/sensor_node/sensor_node.ino</code>)</h3>
-<p>The edge node operates on an <strong>ESP32 DevKit V1 (30-pin)</strong> board. Sensors sample the ambient environment every 2000 milliseconds:
-* <strong>DHT22 (AM2302) Temperature &amp; Humidity Sensor:</strong>
-  * Power: 3.3V / GND
-  * Signal Pin: <strong>GPIO 27</strong> (Digital bidirectional single-bus with internal 10k pull-up).
-  * Measurement Range: $-40^\circ\text{C}$ to $+80^\circ\text{C}$ ($\pm 0.5^\circ\text{C}$ accuracy), $0\text{--}100\%$ RH ($\pm 2\%$ accuracy).
-* <strong>MQ-2 Smoke &amp; Combustible Gas Sensor:</strong>
-  * Heater Power: 5.0V (VBUS / External rail), GND.
-  * Analog Output Pin: <strong>GPIO 34</strong> (Input-only ADC1 channel 6).
-  * Conversion: 12-bit Successive Approximation Register (SAR) ADC ($0\text{--}4095$ range).
-* <strong>Optical Infrared Flame Sensor:</strong>
-  * Power: 3.3V / GND.
-  * Analog Photodiode Output: <strong>GPIO 35</strong> (Input-only ADC1 channel 7).
-  * Characteristics: Inverted analog logic ($4095$ represents ambient dark infrared; values drop towards $0\text{--}500$ upon detecting direct 760nm–1100nm infrared hydrocarbon flame radiation).
-* <strong>Ai-Thinker Ra-02 (Semtech SX1278) LoRa Radio Module:</strong>
-  * Interface: Hardware SPI (Standard VSPI pins).
-  * Chip Select (<code>NSS</code>): <strong>GPIO 5</strong>
-  * Reset (<code>RST</code>): <strong>GPIO 14</strong>
-  * Interrupt (<code>DIO0</code>): <strong>GPIO 26</strong>
-  * Clock (<code>SCK</code>): <strong>GPIO 18</strong>
-  * Master In Slave Out (<code>MISO</code>): <strong>GPIO 19</strong>
-  * Master Out Slave In (<code>MOSI</code>): <strong>GPIO 23</strong></p>
+<h3 id="21-sensor-node-hardware-blueprint-electrical-schematic">2.1 Sensor Node Hardware Blueprint &amp; Electrical Schematic</h3>
+<p>The edge sensor node operates on an <strong>ESP32 DevKit V1 (30-pin)</strong> board. The system utilizes a dual-voltage rail design ($5.0\text{V}$ for the MQ-2 catalytic heater coil and $3.3\text{V}$ for the ESP32 MCU core, SX1278 LoRa radio, DHT22, and optical flame photodiode).</p>
 <div class="code-container">
   <div class="code-header">
     <div class="code-dots">
@@ -694,22 +674,86 @@ graph TD
     </div>
     <div class="code-lang">CODE</div>
   </div>
-  <pre><code>+-------------------------------------------------------------+
-|                     ESP32 DEVKIT V1                         |
-|                                                             |
-|   [GPIO 27] &lt;---- Data ----- [DHT22 Temp &amp; Humidity Sensor] |
-|   [GPIO 34] &lt;---- Analog --- [MQ-2 Gas &amp; Smoke Sensor (5V)] |
-|   [GPIO 35] &lt;---- Analog --- [Optical Flame Photodiode]     |
-|                                                             |
-|   [GPIO  5] ---- NSS -----\                                 |
-|   [GPIO 14] ---- RST ------\                                |
-|   [GPIO 26] &lt;--- DIO0 -----\  [Ai-Thinker Ra-02 SX1278]     |
-|   [GPIO 18] ---- SCK ------/  (433.0 MHz LoRa Module)       |
-|   [GPIO 19] &lt;--- MISO ----/                                 |
-|   [GPIO 23] ---- MOSI ---/                                  |
-+-------------------------------------------------------------+
+  <pre><code>                      +================================================+
+                      |         ESP32 DEVKIT V1 (30-PIN MCU)           |
+                      |                                                |
+[ 5V POWER BANK ] ===&gt;| [VIN (5V)] ───────┬────────────────────────────|───► [MQ-2 VCC (Heater 5V)]
+                      | [3.3V OUT] ──┬────┼────────────────────────────|───► [DHT22 VCC (3.3V)]
+                      |              │    │                            |───► [Flame IR VCC (3.3V)]
+                      |              │    │                            |───► [SX1278 LoRa VCC (3.3V ONLY!)]
+                      |              │    │                            |
+                      | [GND] ───────┴────┴─── [COMMON GROUND BUS] ────|───► [All Sensor &amp; LoRa GNDs]
+                      |                                                |
+                      | [GPIO 27] &lt;── (Digital Single-Wire) ──────────|──── [DHT22 DATA]
+                      | [GPIO 34] &lt;── (Analog ADC1_CH6) ───────────────|──── [MQ-2 Analog A0]
+                      | [GPIO 35] &lt;── (Analog ADC1_CH7) ───────────────|──── [Flame Photodiode A0]
+                      |                                                |
+                      | [GPIO  5] ─── (SPI NSS / Chip Select) ─────────|───► [SX1278 NSS]
+                      | [GPIO 14] ─── (Reset) ─────────────────────────|───► [SX1278 RST]
+                      | [GPIO 26] &lt;── (DIO0 / IRQ Interrupt) ──────────|──── [SX1278 DIO0]
+                      | [GPIO 18] ─── (VSPI SCK Clock) ────────────────|───► [SX1278 SCK]
+                      | [GPIO 19] &lt;── (VSPI MISO Master In) ───────────|──── [SX1278 MISO]
+                      | [GPIO 23] ─── (VSPI MOSI Master Out) ──────────|───► [SX1278 MOSI]
+                      |                                                |
+                      | [ANT PIN] ─────────────────────────────────────|───► [17.3cm 433MHz Antenna]
+                      +================================================+
 </code></pre>
 </div>
+<h3 id="22-physical-30-pin-esp32-pinout-allocation-matrix">2.2 Physical 30-Pin ESP32 Pinout Allocation Matrix</h3>
+<div class="code-container">
+  <div class="code-header">
+    <div class="code-dots">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+    </div>
+    <div class="code-lang">CODE</div>
+  </div>
+  <pre><code>       LEFT HEADER (Pinout)                     RIGHT HEADER (Pinout)
+   +--------------------------+             +--------------------------+
+   | EN     - Reset Button    |             | D23    - SX1278 MOSI     |
+   | VP     - ADC1_CH0 (Free) |             | D22    - I2C SCL (Free)  |
+   | VN     - ADC1_CH3 (Free) |             | TX0    - UART TX (Debug) |
+   | D34    - MQ-2 Smoke ADC  |             | RX0    - UART RX (Debug) |
+   | D35    - Flame IR ADC    |             | D21    - I2C SDA (Free)  |
+   | D32    - Free            |             | D19    - SX1278 MISO     |
+   | D33    - Free            |             | D18    - SX1278 SCK      |
+   | D25    - Free            |             | D5     - SX1278 NSS (CS) |
+   | D26    - SX1278 DIO0 IRQ |             | TX2    - Free            |
+   | D27    - DHT22 Data Wire |             | RX2    - Free            |
+   | D14    - SX1278 RST      |             | D4     - Free            |
+   | D12    - Free            |             | D2     - Built-in LED    |
+   | D13    - Free            |             | D15    - Free            |
+   | GND    - Common Ground   |             | GND    - Common Ground   |
+   | VIN    - 5.0V Power In   |             | 3V3    - 3.3V Rail Out   |
+   +--------------------------+             +--------------------------+
+</code></pre>
+</div>
+<h3 id="23-sensor-electrical-characteristics-interfaces">2.3 Sensor Electrical Characteristics &amp; Interfaces</h3>
+<ul>
+<li><strong>DHT22 (AM2302) Temperature &amp; Humidity Sensor:</strong></li>
+<li>Power: 3.3V / GND (Current: $\approx 1.5\text{ mA}$ during conversion, $50\,\mu\text{A}$ standby).</li>
+<li>Signal Pin: <strong>GPIO 27</strong> (Bidirectional single-bus with internal 10k pull-up resistor).</li>
+<li>Measurement Range: $-40^\circ\text{C}$ to $+80^\circ\text{C}$ ($\pm 0.5^\circ\text{C}$ accuracy), $0\text{--}100\%$ RH ($\pm 2\%$ accuracy).</li>
+<li><strong>MQ-2 Smoke &amp; Combustible Gas Sensor:</strong></li>
+<li>Heater Power: <strong>5.0V</strong> (Direct from power bank / VIN rail), GND.</li>
+<li>Heater Current Draw: $\approx 150\text{--}180\text{ mA}$ continuous ($350^\circ\text{C}$ internal $\text{SnO}_2$ activation temperature).</li>
+<li>Analog Output Pin: <strong>GPIO 34</strong> (Connected to ESP32 ADC1 channel 6; input-only pin, high impedance).</li>
+<li>Measurement: 12-bit SAR ADC ($0\text{--}4095$ range; clean air $\sim 1400\text{--}1700$, dense smoke $&gt; 2000$).</li>
+<li><strong>Optical Infrared Flame Sensor:</strong></li>
+<li>Power: 3.3V / GND (Current: $\approx 15\text{ mA}$).</li>
+<li>Analog Output Pin: <strong>GPIO 35</strong> (Connected to ESP32 ADC1 channel 7; input-only pin).</li>
+<li>Sensitivity: 760nm–1100nm infrared spectrum. Inverted analog logic ($4095$ dark ambient IR; drops to $&lt; 100$ on direct open flame detection).</li>
+<li><strong>Ai-Thinker Ra-02 (Semtech SX1278) LoRa Radio Module:</strong></li>
+<li>Power: <strong>3.3V ONLY</strong> (Connecting 5V will permanently destroy the SX1278 chip).</li>
+<li>Current Draw: $\approx 100\text{--}120\text{ mA}$ during TX (+20 dBm), $12\text{ mA}$ in RX listening mode, $0.2\,\mu\text{A}$ in sleep.</li>
+<li>SPI Bus: <code>NSS (GPIO 5)</code>, <code>RST (GPIO 14)</code>, <code>DIO0 (GPIO 26)</code>, <code>SCK (GPIO 18)</code>, <code>MISO (GPIO 19)</code>, <code>MOSI (GPIO 23)</code>.</li>
+<li>Antenna: $17.3\text{ cm}$ quarter-wave monopole wire attached to ANT pin for $433\text{ MHz}$ $50\,\Omega$ impedance matching.</li>
+</ul>
+<h3 id="24-gateway-base-station-blueprint-firmwaregatewaygatewayino">2.4 Gateway Base Station Blueprint (<code>firmware/gateway/gateway.ino</code>)</h3>
+<p>The Base Station Gateway runs on a matching ESP32 DevKit V1 paired with an SX1278 LoRa receiver:
+1. <strong>SPI Interface:</strong> Identical pinout (<code>NSS: 5</code>, <code>RST: 14</code>, <code>DIO0: 26</code>, <code>SCK: 18</code>, <code>MISO: 19</code>, <code>MOSI: 23</code>).
+2. <strong>UART Bridge Output:</strong> Connects via standard Micro-USB to the host machine (Raspberry Pi / field PC) transferring telemetry frames at <strong>115200 baud</strong> with physical RSSI and SNR metadata.</p>
 <h3 id="22-rf-modulation-parameters">2.2 RF Modulation Parameters</h3>
 <ul>
 <li><strong>Carrier Frequency:</strong> <code>433.0 MHz</code></li>
